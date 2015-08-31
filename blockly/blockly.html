@@ -259,13 +259,18 @@
       <block type="espruino_timeout">
         <value name="SECONDS"><block type="math_number"><title name="NUM">1</title></block></value>
       </block>
+      <block type="espruino_clear_timeout">
+      </block>
       <block type="espruino_interval">
         <value name="SECONDS"><block type="math_number"><title name="NUM">1</title></block></value>
+      </block>
+      <block type="espruino_clear_interval">
       </block>
       <block type="espruino_getTime"></block>
       <block type="espruino_pin"></block>
       <block type="espruino_watch">
         <value name="PIN"><block type="espruino_pin"><title name="PIN">BTN1</title></block></value>
+        <value name="DEBOUNCE"><block type="math_number"><title name="NUM">100</title></block></value>
       </block>
       <block type="espruino_digitalWrite">
         <value name="PIN"><block type="espruino_pin"><title name="PIN">LED1</title></block></value>
@@ -280,6 +285,8 @@
       </block>
       <block type="espruino_analogWrite">
         <value name="PIN"><block type="espruino_pin"><title name="PIN">A1</title></block></value>
+	<value name="VAL"><block type="math_number"><title name="NUM">100</title></block></value>
+	<value name="FREQ"><block type="math_number"><title name="NUM">100</title></block></value>
       </block>
       <block type="espruino_analogRead">
         <value name="PIN"><block type="espruino_pin"><title name="PIN">A0</title></block></value>
@@ -287,13 +294,68 @@
       <block type="espruino_code">
       </block>
     </category>
+    <category name="Wifi">
+      <block type="esp8266_connect">
+        <value name="RX"><block type="espruino_pin"><title name="PIN">A3</title></block></value>
+        <value name="TX"><block type="espruino_pin"><title name="PIN">A2</title></block></value>
+        <value name="BAUD"><block type="math_number"><title name="NUM">115200</title></block></value>
+      </block>
+      <block type="connect_ssid">
+      </block>
+      <block type="get_IP">
+      </block>
+      <block type="get_APs">
+      </block>
+      <block type="get_version">
+      </block>
+      <block type="get_connected">
+      </block>
+      <block type="create_server">
+        <value name="PORT"><block type="math_number"><title name="NUM">8080</title></block></value>
+      </block>
+      <block type="connect_server">
+        <value name="PORT"><block type="math_number"><title name="NUM">8080</title></block></value>
+      </block>
+      <block type="send_data">
+      </block>
+    </category>
+    <category name="Modules">
+      <block type="espruino_servo">
+        <value name="PIN"><block type="espruino_pin"><title name="PIN">A1</title></block></value>
+      </block>
+      <block type="espruino_servoMove">
+        <value name="SRV"><block type="variables_get"><title name="VAR">item</title></block></value>
+        <value name="POS"><block type="math_number"><title name="NUM">1</title></block></value>
+        <value name="DUR"><block type="math_number"><title name="NUM">1000</title></block></value>
+      </block>
+      <block type="espruino_EBR00043L">
+        <value name="S1"><block type="espruino_pin"><title name="PIN">A1</title></block></value>
+        <value name="S2"><block type="espruino_pin"><title name="PIN">A2</title></block></value>
+      </block>	
+      <block type="HCSR04_def">
+        <value name="PIN_trig"><block type="espruino_pin"><title name="PIN">A0</title></block></value>
+        <value name="PIN_echo"><block type="espruino_pin"><title name="PIN">A1</title></block></value>
+      </block>
+      <block type="HCSR04_read">
+        <value name="sensor"><block type="variables_get"><title name="VAR">item</title></block></value>
+      </block>
+      <block type="YL64_def">
+        <value name="S0"><block type="espruino_pin"><title name="PIN">A0</title></block></value>
+        <value name="S1"><block type="espruino_pin"><title name="PIN">A1</title></block></value>
+        <value name="S2"><block type="espruino_pin"><title name="PIN">A2</title></block></value>
+        <value name="S3"><block type="espruino_pin"><title name="PIN">A3</title></block></value>
+        <value name="OUT"><block type="espruino_pin"><title name="PIN">A4</title></block></value>
+      </block>
+      <block type="YL64_read">
+        <value name="sensor"><block type="variables_get"><title name="VAR">item</title></block></value>
+      </block>
+    </category>
     <category name="Functions" custom="PROCEDURE"></category>
   </xml>
 
     <!-- Blockly initial code -->
 <xml id="blocklyInitial" style="display: none">
-  <block type="espruino_watch" inline="true"  ><title name="EDGE">rising</title><value name="PIN"><block type="espruino_pin"><title name="PIN">BTN1</title></block></value><statement name="DO"><block type="espruino_digitalWrite" inline="true"><value name="PIN"><block type="espruino_pin"><title name="PIN">LED1</title></block></value><value name="VAL"><block type="logic_boolean"><title name="BOOL">TRUE</title></block></value><next><block type="espruino_timeout" inline="true"><value name="SECONDS"><block type="math_number"><title name="NUM">1</title></block></value><statement name="DO"><block type="espruino_digitalWrite" inline="true"><value name="PIN"><block type="espruino_pin"><title name="PIN">LED1</title></block></value><value name="VAL"><block type="logic_boolean"><title name="BOOL">FALSE</title></block></value></block></statement></block></next></block></statement></block>
-</xml>
+<block type="variables_set" inline="false"><field name="VAR">Intr</field><value name="VALUE"><block type="espruino_interval" inline="true"><value name="SECONDS"><block type="math_number"><field name="NUM">0.5</field></block></value><statement name="DO"><block type="espruino_digitalWrite" inline="true"><value name="PIN"><block type="espruino_pin"><field name="PIN">LED2</field></block></value><value name="VAL"><block type="logic_negate"  inline="false"><value name="BOOL"><block type="espruino_digitalRead" inline="true"><value name="PIN"><block type="espruino_pin"><field name="PIN">LED2</field></block></value></block></value></block></value></block></statement></block></value><next><block type="espruino_digitalWrite" inline="true"><value name="PIN"><block type="espruino_pin"><field name="PIN">LED1</field></block></value><value name="VAL"><block type="math_number"><field name="NUM">1</field></block></value><next><block type="variables_set" inline="false"><field name="VAR">tOut</field><value name="VALUE"><block type="espruino_timeout" inline="true"><value name="SECONDS"><block type="math_number"><field name="NUM">5</field></block></value><statement name="DO"><block type="espruino_digitalWrite" inline="true"><value name="PIN"><block type="espruino_pin"><field name="PIN">LED1</field></block></value><value name="VAL"><block type="math_number"><field name="NUM">0</field></block></value><next><block type="espruino_clear_interval" inline="true"><value name="INTERVAL"><block type="variables_get"><field name="VAR">Intr</field></block></value></block></next></block></statement></block></value></block></next></block></next></block></xml>
 
   </body>
 </html>

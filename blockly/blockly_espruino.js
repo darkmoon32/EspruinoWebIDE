@@ -114,6 +114,22 @@ Blockly.Blocks.espruino_clear_interval = {
     }
 };
 
+Blockly.Blocks.espruino_change_interval = {
+    category: 'Espruino',
+    init: function() {
+        this.appendValueInput('INTERVAL')
+            .appendField('Change interval ');
+      this.appendValueInput('SECONDS')
+          .setCheck('Number')
+          .appendField('seconds');
+      this.setPreviousStatement(true);
+      this.setNextStatement(true);
+      this.setColour(ESPRUINO_COL);
+      this.setInputsInline(true);
+      this.setTooltip('Change the specified interval');
+    }
+};
+
 Blockly.Blocks.espruino_pin = {
 //      category: 'Espruino',
   init: function() {
@@ -614,6 +630,12 @@ Blockly.JavaScript.espruino_interval = function() {
 Blockly.JavaScript.espruino_clear_interval = function() {
   var intr = Blockly.JavaScript.valueToCode(this, 'INTERVAL', Blockly.JavaScript.ORDER_ATOMIC) || '0';
   return "clearInterval("+intr+");\n";
+};
+Blockly.JavaScript.espruino_change_interval = function() {
+  var intr = Blockly.JavaScript.valueToCode(this, 'INTERVAL', Blockly.JavaScript.ORDER_ATOMIC) || '0';
+  var seconds = Blockly.JavaScript.valueToCode(this, 'SECONDS',
+      Blockly.JavaScript.ORDER_ASSIGNMENT) || '1';
+  return "changeInterval("+intr+","+seconds+"*1000.0);\n";
 };
 Blockly.JavaScript.espruino_pin = function() {
   var code = this.getTitleValue('PIN');

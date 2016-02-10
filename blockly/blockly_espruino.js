@@ -269,12 +269,11 @@ Blockly.Blocks.HCSR04_def = {
 	{
 		this.appendValueInput('PIN_trig').setCheck('Pin').appendField('connect HC-SR04: trig Pin');
 		this.appendValueInput('PIN_echo').setCheck('Pin').appendField('echo Pin');
-		this.appendStatementInput('DO').appendField('callback');
-
+		this.appendDummyInput().appendField('callback').appendField(new Blockly.FieldTextArea("HCSRcb"),"DO");
 		this.setOutput(true, null);
 		this.setColour(ESPRUINO_COL);
 		this.setInputsInline(true);
-		this.setTooltip('Defines connection for HC-SR04 sensor');
+		this.setTooltip('Defines connection for HC-SR04 sensor. Callback clbk(distance)');
 	}
 };
 
@@ -583,6 +582,27 @@ Blockly.Blocks.send_data = {
 
 // -----------------------------------------------------------------------------------
 
+/* Create web server - start */
+Blockly.Blocks.create_web_server = {
+    category: 'Wifi',
+    init: function() {
+        this.appendDummyInput()
+            .appendField('Create server. Callback: onPageRequest')
+            .appendField(new Blockly.FieldTextArea("onPageRequest"),"ONPAGEREQUEST");
+        this.appendValueInput('PORT')
+            .setCheck('Number')
+            .appendField('listen on port');
+      this.setPreviousStatement(false);
+      this.setNextStatement(false);
+      this.setColour(ESPRUINO_COL);
+      this.setInputsInline(true);
+      this.setOutput(true, null);
+      this.setTooltip('Create Web server. Callback is called when is an request. Callback requires two arguments request and response so the callback should look like onPageRequest(req, res)');
+    }
+  };
+
+/* Create web server - end */
+
 Blockly.JavaScript.text_print = function() {
   var argument0 = Blockly.JavaScript.valueToCode(this, 'TEXT',
       Blockly.JavaScript.ORDER_NONE) || '\'\'';
@@ -690,8 +710,8 @@ Blockly.JavaScript.HCSR04_def = function()
 {
   var pinTrig = Blockly.JavaScript.valueToCode(this, 'PIN_trig', Blockly.JavaScript.ORDER_ATOMIC) || '0';
   var pinEcho = Blockly.JavaScript.valueToCode(this, 'PIN_echo', Blockly.JavaScript.ORDER_ATOMIC) || '0';
-  var branch = Blockly.JavaScript.statementToCode(this, 'DO');
-  var code = 'require(\"HC-SR04\").connect(' + pinTrig + ', ' + pinEcho + ', function(dist){' + branch + '})';
+  var cb = this.getFieldValue("DO");
+  var code = 'require(\"HC-SR04\").connect(' + pinTrig + ', ' + pinEcho + ', ' + cb + ')';
   return [ code, Blockly.JavaScript.ORDER_ATOMIC ];
 };
 
@@ -803,4 +823,12 @@ Blockly.JavaScript.send_data = function()
   var soc = Blockly.JavaScript.valueToCode(this, 'SOCKET', Blockly.JavaScript.ORDER_ATOMIC) || '0';
   var data = Blockly.JavaScript.valueToCode(this, 'DATA', Blockly.JavaScript.ORDER_ATOMIC) || '0';
   return soc+".write("+data+");\n";
+};
+
+/*create web server*/
+Blockly.JavaScript.create_web_server = function()
+{
+  var onPageRequest = this.getFieldValue("ONPAGEREQUEST");
+  var port = Blockly.JavaScript.valueToCode(this, 'PORT', Blockly.JavaScript.ORDER_ATOMIC) || '0';
+  return ["require('http').createServer("+onPageRequest+").listen("+port+");\n", Blockly.Javascript.ORDER_ATOMIC];
 };

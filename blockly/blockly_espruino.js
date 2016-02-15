@@ -587,7 +587,7 @@ Blockly.Blocks.create_web_server = {
     category: 'Wifi',
     init: function() {
         this.appendDummyInput()
-            .appendField('Create server. Callback: onPageRequest')
+            .appendField('Create web server. Callback: onPageRequest')
             .appendField(new Blockly.FieldTextArea("onPageRequest"),"ONPAGEREQUEST");
         this.appendValueInput('PORT')
             .setCheck('Number')
@@ -602,6 +602,259 @@ Blockly.Blocks.create_web_server = {
   };
 
 /* Create web server - end */
+Blockly.Blocks['read_objects_property_mutator'] = {
+  /**
+   * Mutator block for add items.
+   * @this Blockly.Block
+   */
+  init: function() {
+    this.setColour(ESPRUINO_COL);
+    this.appendDummyInput()
+        .appendField(Blockly.Msg.READ_OBJECTS_PROPERTY_MUTATOR_ITEM);
+    this.setPreviousStatement(true);
+    this.setNextStatement(true);
+    this.setTooltip(Blockly.Msg.READ_OBJECTS_PROPERTY_MUTATOR_TOOLTIP);
+    this.contextMenu = false;
+  }
+};
+
+Blockly.Blocks['read_objects_property_mutator_container'] = {
+	init:function(){
+		this.setColour(ESPRUINO_COL);
+		this.appendDummyInput().appendField(Blockly.Msg.READ_OBJECTS_PROPERTY_MUTATOR_CONTAINER_TITLE);
+		this.appendStatementInput("STACK");
+		this.setTooltip(Blockly.Msg.READ_OBJECTS_PROPERTY_MUTATOR_TOOLTIP);
+		this.contextMenu = false;
+	}
+};
+
+Blockly.Blocks['read_objects_property_'] = {
+  /**
+   * Block for creating a string made up of any number of elements of any type.
+   * @this Blockly.Block
+   */
+  init: function() {
+    this.setColour(ESPRUINO_COL);
+    this.itemCount_ = 1;
+    this.appendDummyInput()
+        .appendField(Blockly.Msg.READ_OBJECTS_PROPERTY_TEXT)
+        .appendField(new Blockly.FieldVariable("item"), "VAR");
+    this.updateShape_();
+    this.setOutput(true);
+    this.setInputsInline(true);
+    this.setMutator(new Blockly.Mutator(['read_objects_property_mutator']));
+    this.setTooltip(Blockly.Msg.READ_OBJECTS_PROPERTY_TOOLTIP);
+  },
+  /**
+   * Create XML to represent number of text inputs.
+   * @return {!Element} XML storage element.
+   * @this Blockly.Block
+   */
+  mutationToDom: function() {
+    var container = document.createElement('mutation');
+    container.setAttribute('items', this.itemCount_);
+    return container;
+  },
+  /**
+   * Parse XML to restore the text inputs.
+   * @param {!Element} xmlElement XML storage element.
+   * @this Blockly.Block
+   */
+  domToMutation: function(xmlElement) {
+    this.itemCount_ = parseInt(xmlElement.getAttribute('items'), 10);
+    this.updateShape_();
+  },
+  /**
+   * Populate the mutator's dialog with this block's components.
+   * @param {!Blockly.Workspace} workspace Mutator's workspace.
+   * @return {!Blockly.Block} Root block in mutator.
+   * @this Blockly.Block
+   */
+  decompose: function(workspace) {
+    var containerBlock = Blockly.Block.obtain(workspace,"read_objects_property_mutator_container");
+//    var containerBlock = workspace.newBlock('text_create_join_container');
+    containerBlock.initSvg();
+    var connection = containerBlock.getInput('STACK').connection;
+    for (var i = 0; i < this.itemCount_; i++) {
+      var itemBlock = Blockly.Block.obtain(workspace,"read_objects_property_mutator");
+//      var itemBlock = workspace.newBlock('text_create_join_item');
+      itemBlock.initSvg();
+      connection.connect(itemBlock.previousConnection);
+      connection = itemBlock.nextConnection;
+    }
+    return containerBlock;
+  },
+  /**
+   * Reconfigure this block based on the mutator dialog's components.
+   * @param {!Blockly.Block} containerBlock Root block in mutator.
+   * @this Blockly.Block
+   */
+  compose: function(containerBlock) {
+    var itemBlock = containerBlock.getInputTargetBlock('STACK');
+    // Count number of inputs.
+    var connections = [];
+    while (itemBlock) {
+      connections.push(itemBlock.valueConnection_);
+      itemBlock = itemBlock.nextConnection &&
+          itemBlock.nextConnection.targetBlock();
+    }
+    this.itemCount_ = connections.length;
+    this.updateShape_();
+    // Reconnect any child blocks.
+    for (var i = 0; i < this.itemCount_; i++) {
+      if (connections[i]) {
+        this.getInput('KEY' + i).connection.connect(connections[i]);
+      }
+    }
+  },
+  /**
+   * Store pointers to any connected child blocks.
+   * @param {!Blockly.Block} containerBlock Root block in mutator.
+   * @this Blockly.Block
+   */
+  saveConnections: function(containerBlock) {
+    var itemBlock = containerBlock.getInputTargetBlock('STACK');
+    var i = 0;
+    while (itemBlock) {
+      var input = this.getInput('KEY' + i);
+      itemBlock.valueConnection_ = input && input.connection.targetConnection;
+      i++;
+      itemBlock = itemBlock.nextConnection &&
+          itemBlock.nextConnection.targetBlock();
+    }
+  },
+  /**
+   * Modify this block to have the correct number of inputs.
+   * @private
+   * @this Blockly.Block
+   */
+  updateShape_: function() {
+    // Delete everything.
+    if (this.getInput('EMPTY')) {
+      this.removeInput('EMPTY');
+    } else {
+      var i = 0;
+      while (this.getInput('KEY' + i)) {
+        this.removeInput('KEY' + i);
+        i++;
+      }
+    }
+    // Rebuild block.
+    if (this.itemCount_ == 0) {
+      this.appendDummyInput('EMPTY')
+          .appendField(Blockly.Msg.READ_OBJECTS_PROPERTY_NO_KEY)
+    } else {
+      for (var i = 0; i < this.itemCount_; i++) {
+        var input = this.appendValueInput('KEY' + i);
+        if (i == 0) {
+          input.appendField(Blockly.Msg.READ_OBJECTS_PROPERTY);
+        }
+      }
+    }
+  }
+};
+
+Blockly.Blocks['url_parse'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField(Blockly.Msg.URL_PARSE_URL_TEXT)
+        .appendField(new Blockly.FieldVariable("item"), "URL");
+    this.appendValueInput("PARSEQUERY")
+        .setCheck("Boolean")
+        .appendField(Blockly.Msg.URL_PARSE_QUERY_TEXT);
+    this.setInputsInline(true);
+    this.setOutput(true, null);
+    this.setColour(ESPRUINO_COL);
+    this.setTooltip(Blockly.Msg.URL_PARSE_TOOLTIP);
+    this.setHelpUrl(Blockly.Msg.URL_PARSE_HELPURL);
+  }
+}
+
+Blockly.Blocks['httpsrs_end'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField(Blockly.Msg.HTTPSRS_END_TEXT)
+        .appendField(new Blockly.FieldVariable("res"), "VAR");
+    this.appendValueInput("DATA")
+        .setCheck("String")
+        .appendField(Blockly.Msg.HTTPSRS_END_DATA_TEXT);
+    this.setInputsInline(true);
+    this.setPreviousStatement(true);
+    this.setColour(ESPRUINO_COL);
+    this.setTooltip(Blockly.Msg.HTTPSRS_END_TOOLTIP);
+    this.setHelpUrl(Blockly.Msg.HTTPSRS_END_HELPURL);
+  }
+};
+
+Blockly.Blocks['httpsrs_writehead'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField(Blockly.Msg.HTTPSRS_WRITEHEAD_TEXT)
+        .appendField(new Blockly.FieldVariable("res"), "VAR");
+    this.appendValueInput("CODE")
+        .setCheck("Number")
+        .appendField(Blockly.Msg.HTTPSRS_WRITEHEAD_CODE);
+    this.appendValueInput("KEYS")
+        .setCheck(["String", "Array"])
+        .appendField(Blockly.Msg.HTTPSRS_WRITEHEAD_KEYS);
+    this.appendValueInput("VALUES")
+        .setCheck(["String", "Array"])
+        .appendField(Blockly.Msg.HTTPSRS_WRITEHEAD_VALUES);
+    this.setInputsInline(true);
+    this.setPreviousStatement(true);
+    this.setNextStatement(true);
+    this.setColour(ESPRUINO_COL);
+    this.setTooltip(Blockly.Msg.HTTPSRS_WRITEHEAD_TOOLTIP);
+    this.setHelpUrl(Blockly.Msg.HTTPSRS_WRITEHEAD_HELPURL);
+  }
+};
+
+/* callbacks */
+Blockly.JavaScript['httpsrs_writehead'] = function(block) {
+  var variable_var = Blockly.JavaScript.variableDB_.getName(block.getFieldValue('VAR'), Blockly.Variables.NAME_TYPE);
+  var value_code = Blockly.JavaScript.valueToCode(block, 'CODE', Blockly.JavaScript.ORDER_ATOMIC);
+  var value_keys = Blockly.JavaScript.valueToCode(block, 'KEYS', Blockly.JavaScript.ORDER_ATOMIC);
+  var value_values = Blockly.JavaScript.valueToCode(block, 'VALUES', Blockly.JavaScript.ORDER_ATOMIC);
+  var headers = "";
+  if(value_keys.constructor === Array){
+    headers = "{";
+    for(i = 0; i < value_keys.length; i++){
+      headers += "{'"+value_keys[i]+"':'"+value_values[i]+"'},";
+    }
+    headers = headers.substring(0,headers.length-1);
+    headers += "}";
+  }else{
+    headers = "{"+value_keys+":"+value_values+"}";
+  }
+  var code = variable_var + '.writeHead('+value_code+','+headers+');\n';
+  return code;
+};
+
+Blockly.JavaScript['httpsrs_end'] = function(block) {
+  var variable_var = Blockly.JavaScript.variableDB_.getName(block.getFieldValue('VAR'), Blockly.Variables.NAME_TYPE);
+  var value_data = Blockly.JavaScript.valueToCode(block, 'DATA', Blockly.JavaScript.ORDER_ATOMIC) || '';
+  var code = variable_var + '.end(' + value_data + ');\n';
+  return code;
+};
+
+Blockly.JavaScript['url_parse'] = function(block) {
+  var variable_url = Blockly.JavaScript.variableDB_.getName(block.getFieldValue('URL'), Blockly.Variables.NAME_TYPE);
+  var value_PARSEQUERY = Blockly.JavaScript.valueToCode(block, 'PARSEQUERY', Blockly.JavaScript.ORDER_ATOMIC);
+  var code = 'url.parse('+variable_url+', '+value_PARSEQUERY+')';
+  return [code, Blockly.JavaScript.ORDER_ATOMIC];
+};
+
+Blockly.JavaScript['read_objects_property_'] = function(block) {
+  var code = Blockly.JavaScript.variableDB_.getName(block.getFieldValue('VAR'), Blockly.Variables.NAME_TYPE);
+  if (block.itemCount_ == 0) {
+    return [code, Blockly.JavaScript.ORDER_ATOMIC];
+  } else {
+    for (var n = 0; n < block.itemCount_; n++) {
+      code += "." + Blockly.JavaScript.valueToCode(block, 'KEY' + n, Blockly.JavaScript.ORDER_COMMA).match(/[a-zA-Z0-9]+/);
+    }
+    return [code, Blockly.JavaScript.ORDER_FUNCTION_CALL];
+  }
+};
 
 Blockly.JavaScript.text_print = function() {
   var argument0 = Blockly.JavaScript.valueToCode(this, 'TEXT',
@@ -830,5 +1083,12 @@ Blockly.JavaScript.create_web_server = function()
 {
   var onPageRequest = this.getFieldValue("ONPAGEREQUEST");
   var port = Blockly.JavaScript.valueToCode(this, 'PORT', Blockly.JavaScript.ORDER_ATOMIC) || '0';
-  return ["require('http').createServer("+onPageRequest+").listen("+port+");\n", Blockly.Javascript.ORDER_ATOMIC];
+  return ["require('http').createServer("+onPageRequest+").listen("+port+")", Blockly.JavaScript.ORDER_ATOMIC];
+};
+
+Blockly.JavaScript['read_objects_property'] = function(block) {
+  var variable_var = Blockly.JavaScript.variableDB_.getName(block.getFieldValue('VAR'), Blockly.Variables.NAME_TYPE);
+  var value_keys = Blockly.JavaScript.valueToCode(block, 'KEYS', Blockly.JavaScript.ORDER_ATOMIC);
+  var code = '...';
+  return [code, Blockly.JavaScript.ORDER_NONE];
 };

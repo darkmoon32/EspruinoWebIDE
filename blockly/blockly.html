@@ -321,8 +321,18 @@
       </block>
       <block type="send_data">
       </block>
+    </category>
+    <category name="Web">
       <block type="create_web_server">
         <value name="PORT"><block type="math_number"><title name="NUM">80</title></block></value>
+      </block>
+      <block type="read_objects_property_" inline="false">
+        <mutation items="1"></mutation>
+      </block>
+      <block type="url_parse"></block>
+      <block type="httpsrs_end"></block>
+      <block type="httpsrs_writehead">
+        <value name="CODE"><block type="math_number"><title name="NUM">200</title></block></value>
       </block>
     </category>
     <category name="Modules">

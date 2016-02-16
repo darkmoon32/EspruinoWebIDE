@@ -418,3 +418,6 @@ Blockly.Msg.CREATE_SERVER_SOCKET_PORT = "listen on port";
 Blockly.Msg.CREATE_SERVER_SOCKET_TOOLTIP = "Create TCP server. CB is called like function(c). You need to store socket variable c for future comunication.";
 Blockly.Msg.BIND_SOCKET_SERVER_CALLBACKS_TOOLTIP = "Binds socket's callbacks (onData, onClose) ex.: onData(data), onClose()";
 Blockly.Msg.BIND_SOCKET_SERVER_CALLBACKS_HELPURL = "http://www.espruino.com/Reference#l_Socket_close";
+Blockly.Msg.TEXT_CHAR_FROM_CHARCODE_HELPURL = "http://www.espruino.com/Reference#l_String_fromCharCode";
+Blockly.Msg.TEXT_CHAR_FROM_CHARCODE_TOOLTIP = "Convert ascii value to char";
+Blockly.Msg.TEXT_CHAR_FROM_CHARCODE_CHARCODE = "Char from charcode";

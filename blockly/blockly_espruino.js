@@ -847,7 +847,26 @@ Blockly.Blocks['text_charCodeAt'] = {
   }
 };
 
+Blockly.Blocks['text_fromcharcode'] = {
+  init: function() {
+    this.appendValueInput("CHARCODE")
+        .setCheck("Number")
+        .appendField(Blockly.Msg.TEXT_CHAR_FROM_CHARCODE_CHARCODE);
+    this.setInputsInline(true);
+    this.setOutput(true, "String");
+    this.setColour(ESPRUINO_COL);
+    this.setTooltip(Blockly.Msg.TEXT_CHAR_FROM_CHARCODE_TOOLTIP);
+    this.setHelpUrl(Blockly.Msg.TEXT_CHAR_FROM_CHARCODE_HELPURL);
+  }
+};
+
 /* callbacks */
+Blockly.JavaScript['text_fromcharcode'] = function(block) {
+  var value_charcode = Blockly.JavaScript.valueToCode(block, 'CHARCODE', Blockly.JavaScript.ORDER_ATOMIC);
+  var code = 'String.fromCharCode(' + value_charcode + ")";
+  return [code, Blockly.JavaScript.ORDER_NONE];
+};
+
 Blockly.JavaScript['text_charCodeAt'] = function(block) {
   var value_str = Blockly.JavaScript.valueToCode(block, 'STR', Blockly.JavaScript.ORDER_ATOMIC);
   var value_pos = Blockly.JavaScript.valueToCode(block, 'POS', Blockly.JavaScript.ORDER_ATOMIC);

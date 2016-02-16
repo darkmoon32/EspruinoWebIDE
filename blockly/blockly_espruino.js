@@ -524,7 +524,7 @@ Blockly.Blocks.create_server = {
     init: function() {
         this.appendDummyInput()
             .appendField(Blockly.Msg.CREATE_SERVER_SOCKET_ONINCOMING)
-            .appendField(new Blockly.FieldTextArea("onIncommingCB"),"ONINCOMING");
+            .appendField(new Blockly.FieldTextArea("onIncomingCB"),"ONINCOMING");
         this.appendValueInput('PORT')
             .setCheck('Number')
             .appendField(Blockly.Msg.CREATE_SERVER_SOCKET_PORT);
@@ -851,7 +851,7 @@ Blockly.Blocks['text_charCodeAt'] = {
 Blockly.JavaScript['text_charCodeAt'] = function(block) {
   var value_str = Blockly.JavaScript.valueToCode(block, 'STR', Blockly.JavaScript.ORDER_ATOMIC);
   var value_pos = Blockly.JavaScript.valueToCode(block, 'POS', Blockly.JavaScript.ORDER_ATOMIC);
-  var code = value_str + ".charCodeAt(" + ( POS - 1 ) + ")";
+  var code = value_str + ".charCodeAt(" + ( value_pos - 1 ) + ")";
   return [code, Blockly.JavaScript.ORDER_NONE];
 };
 
@@ -1097,7 +1097,7 @@ Blockly.JavaScript.get_connected = function()
 /*create server*/
 Blockly.JavaScript.create_server = function()
 {
-  var onIncoming = this.getFieldValue("ONINCOMMING");
+  var onIncoming = this.getFieldValue("ONINCOMING");
   var port = Blockly.JavaScript.valueToCode(this, 'PORT', Blockly.JavaScript.ORDER_ATOMIC) || '23';
   return "require('net').createServer(" + onIncoming + ").listen("+port+");\n";
 };
@@ -1129,7 +1129,7 @@ Blockly.JavaScript['send_data'] = function(block) {
   var checkbox_close = block.getFieldValue('CLOSE') == 'TRUE';
   var code;
   var how = "write";
-  if(checkbox_close == 'TRUE')
+  if(checkbox_close)
     how = "end";
   code = value_socket + "." + how + "(" + value_data + ");\n";
   return code;

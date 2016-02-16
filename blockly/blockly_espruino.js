@@ -523,22 +523,40 @@ Blockly.Blocks.create_server = {
     category: 'Wifi',
     init: function() {
         this.appendDummyInput()
-            .appendField('Create server. Callbacks: onData')
-            .appendField(new Blockly.FieldTextArea("onDataCB"),"ONDATA");
-        this.appendDummyInput()
-            .appendField('onClose')
-            .appendField(new Blockly.FieldTextArea("onCloseCB"),"ONCLOSE");
+            .appendField(Blockly.Msg.CREATE_SERVER_SOCKET_ONINCOMING)
+            .appendField(new Blockly.FieldTextArea("onIncommingCB"),"ONINCOMING");
         this.appendValueInput('PORT')
             .setCheck('Number')
-            .appendField('listen on port');
-      this.appendStatementInput('DO').appendField('callback');
+            .appendField(Blockly.Msg.CREATE_SERVER_SOCKET_PORT);
       this.setPreviousStatement(true);
       this.setNextStatement(true);
       this.setColour(ESPRUINO_COL);
       this.setInputsInline(true);
-      this.setTooltip('Create TCP server. CB is called like function(c). You need to store socket variable c for future comunication.');
+      this.setTooltip(Blockly.Msg.CREATE_SERVER_SOCKET_TOOLTIP);
     }
   };
+
+/*Bind socket's callbacks*/
+Blockly.Blocks['bind_callbacks'] = {
+  category: "Wifi",
+  init: function() {
+    this.appendDummyInput()
+        .appendField("Bind socket")
+        .appendField(new Blockly.FieldVariable("socket"), "VAR");
+    this.appendDummyInput()
+        .appendField("onData")
+        .appendField(new Blockly.FieldTextInput("onDataCB"), "ONDATA");
+    this.appendDummyInput()
+        .appendField("onClose")
+        .appendField(new Blockly.FieldTextInput("onCloseCB"), "ONCLOSE");
+    this.setInputsInline(true);
+    this.setPreviousStatement(true);
+    this.setNextStatement(true);
+    this.setColour(ESPRUINO_COL);
+    this.setTooltip(Blockly.Msg.BIND_SOCKET_SERVER_CALLBACKS_TOOLTIP);
+    this.setHelpUrl(Blockly.Msg.BIND_SOCKET_SERVER_CALLBACKS_HELPURL);
+  }
+};
 
 /*connect server*/
 Blockly.Blocks.connect_server = {
@@ -565,26 +583,32 @@ Blockly.Blocks.connect_server = {
   };
 
 /*send data*/
-Blockly.Blocks.send_data = {
-    category: 'Wifi',
-    init: function() {
-        this.appendValueInput('SOCKET')
-            .appendField('Send data. Socket');
-        this.appendValueInput('DATA')
-            .appendField('data');
-      this.setPreviousStatement(true);
-      this.setNextStatement(true);
-      this.setColour(ESPRUINO_COL);
-      this.setInputsInline(true);
-      this.setTooltip('Send data');
-    }
-  };
+Blockly.Blocks['send_data'] = {
+  category: "Wifi",
+  init: function() {
+    this.appendValueInput("DATA")
+        .setCheck("String")
+        .appendField(Blockly.Msg.SOCKET_SEND_DATA_DATA);
+    this.appendValueInput("SOCKET")
+        .setCheck(null)
+        .appendField(Blockly.Msg.SOCKET_SEND_DATA_SOCKET);
+    this.appendDummyInput()
+        .appendField(new Blockly.FieldCheckbox("FALSE"), "CLOSE")
+        .appendField(Blockly.Msg.SOCKET_SEND_DATA_CLOSE_IT);
+    this.setInputsInline(true);
+    this.setPreviousStatement(true);
+    this.setNextStatement(true);
+    this.setColour(ESPRUINO_COL);
+    this.setTooltip(Blockly.Msg.SOCKET_SEND_DATA_TOOLTIP);
+    this.setHelpUrl(Blockly.Msg.SOCKET_SEND_DATA_HELPURL);
+  }
+};
 
 // -----------------------------------------------------------------------------------
 
 /* Create web server - start */
 Blockly.Blocks.create_web_server = {
-    category: 'Wifi',
+    category: 'Web',
     init: function() {
         this.appendDummyInput()
             .appendField('Create web server. Callback: onPageRequest')
@@ -636,9 +660,7 @@ Blockly.Blocks['read_objects_property_'] = {
   init: function() {
     this.setColour(ESPRUINO_COL);
     this.itemCount_ = 1;
-    this.appendDummyInput()
-        .appendField(Blockly.Msg.READ_OBJECTS_PROPERTY_TEXT)
-        .appendField(new Blockly.FieldVariable("item"), "VAR");
+    this.appendValueInput('VAR').appendField(Blockly.Msg.READ_OBJECTS_PROPERTY_VAR);
     this.updateShape_();
     this.setOutput(true);
     this.setInputsInline(true);
@@ -809,7 +831,30 @@ Blockly.Blocks['httpsrs_writehead'] = {
   }
 };
 
+Blockly.Blocks['text_charCodeAt'] = {
+  init: function() {
+    this.appendValueInput("STR")
+        .setCheck("String")
+        .appendField(Blockly.Msg.TEXT_CHAR_CODE_AT_STR);
+    this.appendValueInput("POS")
+        .setCheck("Number")
+        .appendField(Blockly.Msg.TEXT_CHAR_CODE_AT_POS);
+    this.setInputsInline(true);
+    this.setOutput(true);
+    this.setColour(ESPRUINO_COL);
+    this.setTooltip(Blockly.Msg.TEXT_CHAR_CODE_AT_TOOLTIP);
+    this.setHelpUrl(Blockly.Msg.TEXT_CHAR_CODE_AT_HELPURL);
+  }
+};
+
 /* callbacks */
+Blockly.JavaScript['text_charCodeAt'] = function(block) {
+  var value_str = Blockly.JavaScript.valueToCode(block, 'STR', Blockly.JavaScript.ORDER_ATOMIC);
+  var value_pos = Blockly.JavaScript.valueToCode(block, 'POS', Blockly.JavaScript.ORDER_ATOMIC);
+  var code = value_str + ".charCodeAt(" + ( POS - 1 ) + ")";
+  return [code, Blockly.JavaScript.ORDER_NONE];
+};
+
 Blockly.JavaScript['httpsrs_writehead'] = function(block) {
   var variable_var = Blockly.JavaScript.variableDB_.getName(block.getFieldValue('VAR'), Blockly.Variables.NAME_TYPE);
   var value_code = Blockly.JavaScript.valueToCode(block, 'CODE', Blockly.JavaScript.ORDER_ATOMIC);
@@ -839,13 +884,13 @@ Blockly.JavaScript['httpsrs_end'] = function(block) {
 
 Blockly.JavaScript['url_parse'] = function(block) {
   var variable_url = Blockly.JavaScript.variableDB_.getName(block.getFieldValue('URL'), Blockly.Variables.NAME_TYPE);
-  var value_PARSEQUERY = Blockly.JavaScript.valueToCode(block, 'PARSEQUERY', Blockly.JavaScript.ORDER_ATOMIC);
+  var value_PARSEQUERY = Blockly.JavaScript.valueToCode(block, 'PARSEQUERY', Blockly.JavaScript.ORDER_ATOMIC) || true;
   var code = 'url.parse('+variable_url+', '+value_PARSEQUERY+')';
   return [code, Blockly.JavaScript.ORDER_ATOMIC];
 };
 
 Blockly.JavaScript['read_objects_property_'] = function(block) {
-  var code = Blockly.JavaScript.variableDB_.getName(block.getFieldValue('VAR'), Blockly.Variables.NAME_TYPE);
+  var code = Blockly.JavaScript.valueToCode(block, 'VAR', Blockly.JavaScript.ORDER_ATOMIC) || 'this';
   if (block.itemCount_ == 0) {
     return [code, Blockly.JavaScript.ORDER_ATOMIC];
   } else {
@@ -1052,11 +1097,18 @@ Blockly.JavaScript.get_connected = function()
 /*create server*/
 Blockly.JavaScript.create_server = function()
 {
-  var onData = this.getFieldValue("ONDATA");
-  var onClose = this.getFieldValue("ONCLOSE");
-  var port = Blockly.JavaScript.valueToCode(this, 'PORT', Blockly.JavaScript.ORDER_ATOMIC) || '0';
-  var cb = Blockly.JavaScript.statementToCode(this, 'DO');
-  return "require('net').createServer(function(c){\nc.on('data', "+onData+");\nc.on('close', "+onClose+");\n"+cb+"\n}).listen("+port+");\n";
+  var onIncoming = this.getFieldValue("ONINCOMMING");
+  var port = Blockly.JavaScript.valueToCode(this, 'PORT', Blockly.JavaScript.ORDER_ATOMIC) || '23';
+  return "require('net').createServer(" + onIncoming + ").listen("+port+");\n";
+};
+
+/*Bind socket's callbacks*/
+Blockly.JavaScript['bind_callbacks'] = function(block) {
+  var variable_var = Blockly.JavaScript.variableDB_.getName(block.getFieldValue('VAR'), Blockly.Variables.NAME_TYPE);
+  var text_ondata = block.getFieldValue('ONDATA');
+  var text_onclose = block.getFieldValue('ONCLOSE');
+  var code = variable_var + '.on("data", ' + text_ondata + ');\n' + variable_var + '.on("close", ' + text_onclose + ');\n';
+  return code;
 };
 
 /*connect server*/
@@ -1071,11 +1123,16 @@ Blockly.JavaScript.connect_server = function()
 };
 
 /*send data*/
-Blockly.JavaScript.send_data = function()
-{
-  var soc = Blockly.JavaScript.valueToCode(this, 'SOCKET', Blockly.JavaScript.ORDER_ATOMIC) || '0';
-  var data = Blockly.JavaScript.valueToCode(this, 'DATA', Blockly.JavaScript.ORDER_ATOMIC) || '0';
-  return soc+".write("+data+");\n";
+Blockly.JavaScript['send_data'] = function(block) {
+  var value_data = Blockly.JavaScript.valueToCode(block, 'DATA', Blockly.JavaScript.ORDER_ATOMIC) || "";
+  var value_socket = Blockly.JavaScript.valueToCode(block, 'SOCKET', Blockly.JavaScript.ORDER_ATOMIC) || 'this';
+  var checkbox_close = block.getFieldValue('CLOSE') == 'TRUE';
+  var code;
+  var how = "write";
+  if(checkbox_close == 'TRUE')
+    how = "end";
+  code = value_socket + "." + how + "(" + value_data + ");\n";
+  return code;
 };
 
 /*create web server*/

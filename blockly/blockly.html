@@ -156,6 +156,18 @@
           </block>
         </value>
       </block>
+      <block type="text_charCodeAt" inline="true"  >
+        <value name="STR">
+          <block type="variables_get">
+            <title name="VAR">text</title>
+          </block>
+        </value>
+        <value name="POS">
+          <block type="math_number">
+            <title name="NUM">1</title>
+          </block>
+        </value>
+      </block>
       <block type="text_getSubstring" inline="true"  >
         <mutation at1="true" at2="true"></mutation>
         <title name="WHERE1">FROM_START</title>
@@ -320,6 +332,8 @@
         <value name="PORT"><block type="math_number"><title name="NUM">8080</title></block></value>
       </block>
       <block type="send_data">
+      </block>
+      <block type="bind_callbacks">
       </block>
     </category>
     <category name="Web">

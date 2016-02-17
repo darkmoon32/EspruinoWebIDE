@@ -860,7 +860,147 @@ Blockly.Blocks['text_fromcharcode'] = {
   }
 };
 
+/* LCD HD44780 */
+Blockly.Blocks['lcd_display_init'] = {
+  init: function() {
+    this.appendValueInput("RS")
+        .setCheck(null)
+        .appendField(Blockly.Msg.LCD_INIT_RS);
+    this.appendValueInput("E")
+        .setCheck(null)
+        .appendField(Blockly.Msg.LCD_INIT_E);
+    this.appendValueInput("D4")
+        .setCheck(null)
+        .appendField(Blockly.Msg.LCD_INIT_D4);
+    this.appendValueInput("D5")
+        .setCheck(null)
+        .appendField(Blockly.Msg.LCD_INIT_D5);
+    this.appendValueInput("D6")
+        .setCheck(null)
+        .appendField(Blockly.Msg.LCD_INIT_D6);
+    this.appendValueInput("D7")
+        .setCheck(null)
+        .appendField(Blockly.Msg.LCD_INIT_D7);
+    this.setInputsInline(true);
+    this.setOutput(true);
+    this.setTooltip(Blockly.Msg.LCD_INIT_TOOLTIP);
+    this.setHelpUrl(Blockly.Msg.LCD_INIT_HELPURL);
+    this.setColour(ESPRUINO_COL);
+  }
+};
+
+Blockly.Blocks['lcd_display_clear'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField(Blockly.Msg.LCD_CLEAR_DISP)
+        .appendField(new Blockly.FieldVariable("item"), "DISP");
+    this.setInputsInline(true);
+    this.setPreviousStatement(true);
+    this.setNextStatement(true);
+    this.setColour(ESPRUINO_COL);
+    this.setTooltip(Blockly.Msg.LCD_CLEAR_TOOLTIP);
+    this.setHelpUrl(Blockly.Msg.LCD_CLEAR_HELPURL);
+  }
+};
+
+Blockly.Blocks['lcd_display_print'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField(Blockly.Msg.LCD_PRINT_DISP)
+        .appendField(new Blockly.FieldVariable("item"), "DISP");
+    this.appendValueInput("TEXT")
+        .setCheck("String")
+        .appendField(Blockly.Msg.LCD_PRINT_TEXT);
+    this.setInputsInline(true);
+    this.setPreviousStatement(true);
+    this.setNextStatement(true);
+    this.setColour(ESPRUINO_COL);
+    this.setTooltip(Blockly.Msg.LCD_PRINT_TOOLTIP);
+    this.setHelpUrl(Blockly.Msg.LCD_PRINT_HELPURL);
+  }
+};
+
+Blockly.Blocks['lcd_display_set_cursor'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField(Blockly.Msg.LCD_SET_CURSOR_DISP)
+        .appendField(new Blockly.FieldVariable("item"), "DISP");
+    this.appendDummyInput()
+        .appendField(Blockly.Msg.LCD_SET_CURSOR_X)
+        .appendField(new Blockly.FieldDropdown([["1", "1"], ["2", "2"], ["3", "3"], ["4", "4"], ["5", "5"], ["6", "6"], ["7", "7"], ["8", "8"], ["9", "9"], ["10", "10"], ["11", "11"], ["12", "12"], ["13", "13"], ["14", "14"], ["15", "15"], ["16", "16"]]), "X");
+    this.appendDummyInput()
+        .appendField(Blockly.Msg.LCD_SET_CURSOR_Y)
+        .appendField(new Blockly.FieldDropdown([["1", "1"], ["2", "2"]]), "Y");
+    this.setInputsInline(true);
+    this.setPreviousStatement(true);
+    this.setNextStatement(true);
+    this.setColour(ESPRUINO_COL);
+    this.setTooltip(Blockly.Msg.LCD_SET_CURSOR_TOOLTIP);
+    this.setHelpUrl(Blockly.Msg.LCD_SET_CURSOR_HELPURL);
+  }
+};
+
+Blockly.Blocks['lcd_display_create_char'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField(Blockly.Msg.LCD_CREATE_CHAR_DISP)
+        .appendField(new Blockly.FieldVariable("item"), "DISP");
+    this.appendValueInput("CHAR")
+        .setCheck("Number")
+        .appendField(Blockly.Msg.LCD_CREATE_CHAR_CHAR);
+    this.appendValueInput("DATA")
+        .setCheck("Array")
+        .appendField(Blockly.Msg.LCD_CREATE_CHAR_DATA);
+    this.setInputsInline(true);
+    this.setPreviousStatement(true);
+    this.setNextStatement(true);
+    this.setColour(ESPRUINO_COL);
+    this.setTooltip(Blockly.Msg.LCD_CREATE_CHAR_TOOLTIP);
+    this.setHelpUrl(Blockly.Msg.LCD_CREATE_CHAR_HELPURL);
+  }
+};
+
 /* callbacks */
+Blockly.JavaScript['lcd_display_create_char'] = function(block) {
+  var variable_disp = Blockly.JavaScript.variableDB_.getName(block.getFieldValue('DISP'), Blockly.Variables.NAME_TYPE);
+  var value_char = Blockly.JavaScript.valueToCode(block, 'CHAR', Blockly.JavaScript.ORDER_ATOMIC);
+  var value_data = Blockly.JavaScript.valueToCode(block, 'DATA', Blockly.JavaScript.ORDER_ATOMIC);
+  var code = variable_disp + '.createChar(' + value_char + ', ' + value_dat + ');\n';
+  return code;
+};
+
+Blockly.JavaScript['lcd_display_set_cursor'] = function(block) {
+  var variable_disp = Blockly.JavaScript.variableDB_.getName(block.getFieldValue('DISP'), Blockly.Variables.NAME_TYPE);
+  var dropdown_x = block.getFieldValue('X');
+  var dropdown_y = block.getFieldValue('Y');
+  var code = variable_disp + '.setCursor(' + (dropdown_x - 1) + ', ' + (dropdown_y - 1) + ');\n';
+  return code;
+};
+
+Blockly.JavaScript['lcd_display_print'] = function(block) {
+  var variable_disp = Blockly.JavaScript.variableDB_.getName(block.getFieldValue('DISP'), Blockly.Variables.NAME_TYPE);
+  var value_text = Blockly.JavaScript.valueToCode(block, 'TEXT', Blockly.JavaScript.ORDER_ATOMIC);
+  var code = variable_disp + '.print(' + value_text + ');\n';
+  return code;
+};
+
+Blockly.JavaScript['lcd_display_clear'] = function(block) {
+  var variable_disp = Blockly.JavaScript.variableDB_.getName(block.getFieldValue('DISP'), Blockly.Variables.NAME_TYPE);
+  var code = variable_disp + '.clear();\n';
+  return code;
+};
+
+Blockly.JavaScript['lcd_display_init'] = function(block) {
+  var value_rs = Blockly.JavaScript.valueToCode(block, 'RS', Blockly.JavaScript.ORDER_ATOMIC);
+  var value_e = Blockly.JavaScript.valueToCode(block, 'E', Blockly.JavaScript.ORDER_ATOMIC);
+  var value_d4 = Blockly.JavaScript.valueToCode(block, 'D4', Blockly.JavaScript.ORDER_ATOMIC);
+  var value_d5 = Blockly.JavaScript.valueToCode(block, 'D5', Blockly.JavaScript.ORDER_ATOMIC);
+  var value_d6 = Blockly.JavaScript.valueToCode(block, 'D6', Blockly.JavaScript.ORDER_ATOMIC);
+  var value_d7 = Blockly.JavaScript.valueToCode(block, 'D7', Blockly.JavaScript.ORDER_ATOMIC);
+  var code = 'require("HD44780").connect(' + value_rs + ',' + value_e + ',' + value_d4 + ',' + value_d5 + ',' + value_d6 + ',' + value_d7 + ')';
+  return [code, Blockly.JavaScript.ORDER_NONE];
+};
+
 Blockly.JavaScript['text_fromcharcode'] = function(block) {
   var value_charcode = Blockly.JavaScript.valueToCode(block, 'CHARCODE', Blockly.JavaScript.ORDER_ATOMIC);
   var code = 'String.fromCharCode(' + value_charcode + ")";

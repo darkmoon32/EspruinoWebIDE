@@ -168,7 +168,7 @@
           </block>
         </value>
       </block>
-      <block type="text_fromcharcode" inline="true"  >
+      <block type="text_fromcharcode" inline="true">
         <value name="CHARCODE">
           <block type="math_number">
             <title name="NUM">10</title>
@@ -355,6 +355,20 @@
       <block type="httpsrs_writehead">
         <value name="CODE"><block type="math_number"><title name="NUM">200</title></block></value>
       </block>
+    </category>
+    <category name="LCD">
+      <block type="lcd_display_init">
+        <value name="RS"><block type="espruino_pin"><title name="PIN">A0</title></block></value>
+        <value name="E"><block type="espruino_pin"><title name="PIN">A1</title></block></value>
+        <value name="D4"><block type="espruino_pin"><title name="PIN">C0</title></block></value>
+        <value name="D5"><block type="espruino_pin"><title name="PIN">C1</title></block></value>
+        <value name="D6"><block type="espruino_pin"><title name="PIN">C2</title></block></value>
+        <value name="D7"><block type="espruino_pin"><title name="PIN">C3</title></block></value>
+      </block>lcd_display_clear
+      <block type="lcd_display_clear"></block>
+      <block type="lcd_display_print"></block>
+      <block type="lcd_display_set_cursor"></block>
+      <block type="lcd_display_create_char"></block>
     </category>
     <category name="Modules">
       <block type="espruino_servo">

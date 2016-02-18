@@ -371,13 +371,9 @@
       <block type="lcd_display_create_char"></block>
     </category>
     <category name="Modules">
-      <block type="espruino_servo">
+      <block type="servo_move">
         <value name="PIN"><block type="espruino_pin"><title name="PIN">A1</title></block></value>
-      </block>
-      <block type="espruino_servoMove">
-        <value name="SRV"><block type="variables_get"><title name="VAR">item</title></block></value>
         <value name="POS"><block type="math_number"><title name="NUM">1</title></block></value>
-        <value name="DUR"><block type="math_number"><title name="NUM">1000</title></block></value>
       </block>
       <block type="espruino_EBR00043L">
         <value name="S1"><block type="espruino_pin"><title name="PIN">A1</title></block></value>

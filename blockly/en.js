@@ -446,3 +446,6 @@ Blockly.Msg.LCD_CREATE_CHAR_TOOLTIP = "Create's custom character in LCD ram. It 
 Blockly.Msg.LCD_CREATE_CHAR_DISP = "LCD create char";
 Blockly.Msg.LCD_CREATE_CHAR_CHAR = "char position";
 Blockly.Msg.LCD_CREATE_CHAR_DATA = "char data";
+Blockly.Msg.SERVO_MOVE_TOOLTIP = "Move servo to position. Position is between 0-1";
+Blockly.Msg.SERVO_MOVE_POSITION = "Position";
+Blockly.Msg.SERVO_MOVE_PIN = "Servo move. Pin";

@@ -207,41 +207,6 @@ Blockly.Blocks.espruino_getTime = {
     }
   };
 
-Blockly.Blocks.espruino_servo = {
-  category: 'Modules',
-  init: function() {
-      this.appendValueInput('PIN')
-        .setCheck('Pin')
-        .appendField('Connect servo to ');
-//    this.setPreviousStatement(true);
-//    this.setNextStatement(true);
-    this.setOutput(true, null);
-    this.setColour(ESPRUINO_COL);
-    this.setInputsInline(true);
-    this.setTooltip('Initialize servo');
-  }
-};
-Blockly.Blocks.espruino_servoMove = {
-  category: 'Modules',
-  init: function() {
-      this.appendValueInput('SRV')
-          .appendField('Move servo');
-      this.appendValueInput('POS')
-          .setCheck('Number')
-          .appendField('to position');
-      this.appendValueInput('DUR')
-          .setCheck('Number')
-          .appendField('miliseconds');
-      this.appendStatementInput('DO')
-           .appendField('do');
-
-    this.setPreviousStatement(true);
-    this.setNextStatement(true);
-    this.setColour(ESPRUINO_COL);
-    this.setInputsInline(true);
-    this.setTooltip('Move servo');
-  }
-};
 	
 /*EBR00043L block*/
 Blockly.Blocks.espruino_EBR00043L = {
@@ -1079,16 +1044,27 @@ Blockly.JavaScript.espruino_getTime = function() {
   return ["getTime()\n", Blockly.JavaScript.ORDER_ATOMIC];
 };
 /*servo module*/
-Blockly.JavaScript.espruino_servo = function() {
-  var pin = Blockly.JavaScript.valueToCode(this, 'PIN', Blockly.JavaScript.ORDER_ASSIGNMENT) || '0';
-  return ["require(\"servo\").connect("+pin+")", Blockly.JavaScript.ORDER_ATOMIC];
+Blockly.Blocks['servo_move'] = {
+  init: function() {
+    this.appendValueInput("PIN")
+        .setCheck(null)
+        .appendField(Blockly.Msg.SERVO_MOVE_PIN);
+    this.appendValueInput("POS")
+        .setCheck("Number")
+        .appendField(Blockly.Msg.SERVO_MOVE_POSITION);
+    this.setInputsInline(true);
+    this.setPreviousStatement(true);
+    this.setNextStatement(true);
+    this.setColour(ESPRUINO_COL);
+    this.setTooltip(Blockly.Msg.SERVO_MOVE_TOOLTIP);
+  }
 };
-Blockly.JavaScript.espruino_servoMove = function() {
-  var pos = Blockly.JavaScript.valueToCode(this, 'POS', Blockly.JavaScript.ORDER_ASSIGNMENT) || '0';
-  var srv = Blockly.JavaScript.valueToCode(this, 'SRV', Blockly.JavaScript.ORDER_ASSIGNMENT) || '0';
-  var dur = Blockly.JavaScript.valueToCode(this, 'DUR', Blockly.JavaScript.ORDER_ASSIGNMENT) || '0';
-  var branch = Blockly.JavaScript.statementToCode(this, 'DO');
-  return srv+".move("+pos+","+dur+(branch == '' ? '' : ",function(){\n"+branch+"\n}")+");\n";	
+
+Blockly.JavaScript['servo_move'] = function(block) {
+  var value_pin = Blockly.JavaScript.valueToCode(block, 'PIN', Blockly.JavaScript.ORDER_ATOMIC);
+  var value_pos = Blockly.JavaScript.valueToCode(block, 'POS', Blockly.JavaScript.ORDER_ATOMIC);
+  var code = 'analogWrite(' + value_pin + ', (1 + Math.min(Math.max(' + value_pos + ', 0), 1)) / 20,{freq : 50});\n';
+  return code;
 };
 
 /*EBR00043L module*/

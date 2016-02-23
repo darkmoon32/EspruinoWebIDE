@@ -1278,9 +1278,119 @@ Blockly.JavaScript.create_web_server = function()
   return ["require('http').createServer("+onPageRequest+").listen("+port+")", Blockly.JavaScript.ORDER_ATOMIC];
 };
 
-Blockly.JavaScript['read_objects_property'] = function(block) {
-  var variable_var = Blockly.JavaScript.variableDB_.getName(block.getFieldValue('VAR'), Blockly.Variables.NAME_TYPE);
-  var value_keys = Blockly.JavaScript.valueToCode(block, 'KEYS', Blockly.JavaScript.ORDER_ATOMIC);
+Blockly.Blocks['spi_setup'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField(Blockly.Msg.SPI_SETUP_SPI)
+        .appendField(new Blockly.FieldDropdown([["spi1", "SPI1"], ["spi2", "SPI2"], ["spi3", "SPI3"]]), "SPI");
+    this.appendValueInput("MISO")
+        .setCheck(null)
+        .appendField(Blockly.Msg.SPI_SETUP_MISO);
+    this.appendValueInput("MOSI")
+        .setCheck(null)
+        .appendField(Blockly.Msg.SPI_SETUP_MOSI);
+    this.appendValueInput("SCK")
+        .setCheck(null)
+        .appendField(Blockly.Msg.SPI_SETUP_SCK);
+    this.setInputsInline(true);
+    this.setPreviousStatement(true);
+    this.setNextStatement(true);
+    this.setColour(ESPRUINO_COL);
+    this.setTooltip(Blockly.Msg.SPI_SETUP_TOOLTIP);
+    this.setHelpUrl(Blockly.Msg.SPI_SETUP_HELPURL);
+  }
+};
+
+Blockly.JavaScript['spi_setup'] = function(block) {
+  var dropdown_spi = block.getFieldValue('SPI');
+  var value_miso = Blockly.JavaScript.valueToCode(block, 'MISO', Blockly.JavaScript.ORDER_ATOMIC);
+  var value_mosi = Blockly.JavaScript.valueToCode(block, 'MOSI', Blockly.JavaScript.ORDER_ATOMIC);
+  var value_sck = Blockly.JavaScript.valueToCode(block, 'SCK', Blockly.JavaScript.ORDER_ATOMIC);
+  var code = dropdown_spi + '.setup({sck:' + value_sck + ', miso:' + value_miso + ', mosi:' + value_mosi + ' });\n';
+  return code;
+};
+
+Blockly.Blocks['rc522_init'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField(Blockly.Msg.RC522_INIT_SPI)
+        .appendField(new Blockly.FieldDropdown([["spi1", "SPI1"], ["spi2", "SPI2"], ["spi3", "spi3"]]), "SPI");
+    this.appendValueInput("CS")
+        .setCheck(null)
+        .appendField(Blockly.Msg.RC522_INIT_CS);
+    this.setInputsInline(true);
+    this.setOutput(true, null);
+    this.setColour(ESPRUINO_COL);
+    this.setTooltip(Blockly.Msg.RC522_INIT_TOOLTIP);
+    this.setHelpUrl(Blockly.Msg.RC522_INIT_HELPUPL);
+  }
+};
+
+Blockly.JavaScript['rc522_init'] = function(block) {
+  var dropdown_spi = block.getFieldValue('SPI');
+  var value_cs = Blockly.JavaScript.valueToCode(block, 'CS', Blockly.JavaScript.ORDER_ATOMIC);
+  var code = 'require("MFRC522").connect(' + dropdown_spi + ', ' + value_cs + ')';
+  return [code, Blockly.JavaScript.ORDER_ATOMIC];
+};
+
+Blockly.Blocks['rc522_findcards'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField(Blockly.Msg.RC522_FINDCARDS_RC522)
+        .appendField(new Blockly.FieldVariable("item"), "RC522");
+    this.appendDummyInput()
+        .appendField(Blockly.Msg.RC522_FINDCARDS_CLBK)
+        .appendField(new Blockly.FieldTextInput("onDone"), "CLBK");
+    this.setInputsInline(true);
+    this.setPreviousStatement(true);
+    this.setNextStatement(true);
+    this.setColour(ESPRUINO_COL);
+    this.setTooltip(Blockly.Msg.RC522_FINDCARDS_TOOLTIP);
+    this.setHelpUrl(Blockly.Msg.RC522_FINDCARDS_HELPURL);
+  }
+};
+
+Blockly.JavaScript['rc522_findcards'] = function(block) {
+  var variable_rc522 = Blockly.JavaScript.variableDB_.getName(block.getFieldValue('RC522'), Blockly.Variables.NAME_TYPE);
+  var text_clbk = block.getFieldValue('CLBK');
+  var code = variable_rc522 + '.findCards(' + text_clbk + ');\n';
+  return code;
+};
+
+Blockly.Blocks['json_stringify'] = {
+  init: function() {
+    this.appendValueInput("ARRAY")
+        .setCheck("Array")
+        .appendField(Blockly.Msg.JSON_STRINGIFY_ARRAY);
+    this.setInputsInline(true);
+    this.setOutput(true, "String");
+    this.setColour(ESPRUINO_COL);
+    this.setTooltip(Blockly.Msg.JSON_STRINGIFY_TOOLTIP);
+    this.setHelpUrl(Blockly.Msg.JSON_STRINGIFY_HELPURL);
+  }
+};
+
+Blockly.JavaScript['json_stringify'] = function(block) {
+  var value_array = Blockly.JavaScript.valueToCode(block, 'ARRAY', Blockly.JavaScript.ORDER_ATOMIC);
+  var code = 'JSON.stringify(' + value_array + ')';
+  return [code, Blockly.JavaScript.ORDER_FUNCTION_CALL];
+};
+
+Blockly.Blocks['json_parse'] = {
+  init: function() {
+    this.appendValueInput("STRING")
+        .setCheck("String")
+        .appendField(Blockly.Msg.JSON_PARSE_STRING);
+    this.setInputsInline(true);
+    this.setOutput(true, "Array");
+    this.setColour(ESPRUINO_COL);
+    this.setTooltip(Blockly.Msg.JSON_PARSE_TOOLTIP);
+    this.setHelpUrl(Blockly.Msg.JSON_PARSE_HELPURL);
+  }
+};
+
+Blockly.JavaScript['json_parse'] = function(block) {
+  var value_string = Blockly.JavaScript.valueToCode(block, 'STRING', Blockly.JavaScript.ORDER_ATOMIC);
   var code = '...';
   return [code, Blockly.JavaScript.ORDER_NONE];
 };

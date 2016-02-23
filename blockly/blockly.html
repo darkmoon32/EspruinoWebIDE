@@ -192,6 +192,8 @@
         <title name="MODE">BOTH</title>
       </block>
       <block type="text_print" inline="false"  ></block>
+      <block type="json_stringify" inline="true"  ></block>
+      <block type="json_parse" inline="true"  ></block>
     </category>
     <category name="Lists">
       <block type="variables_set"><title name="VAR">list</title><value name="VALUE">
@@ -396,6 +398,15 @@
       <block type="YL64_read">
         <value name="sensor"><block type="variables_get"><title name="VAR">item</title></block></value>
       </block>
+      <block type="spi_setup">
+        <value name="MISO"><block type="espruino_pin"><title name="PIN">B4</title></block></value>
+        <value name="MOSI"><block type="espruino_pin"><title name="PIN">B5</title></block></value>
+        <value name="SCK"><block type="espruino_pin"><title name="PIN">B3</title></block></value>
+      </block>
+      <block type="rc522_init">
+        <value name="CS"><block type="espruino_pin"><title name="PIN">B2</title></block></value>
+      </block>
+      <block type="rc522_findcards"></block>
     </category>
     <category name="Functions" custom="PROCEDURE"></category>
   </xml>

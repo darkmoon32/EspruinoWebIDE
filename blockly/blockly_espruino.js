@@ -925,7 +925,31 @@ Blockly.Blocks['lcd_display_create_char'] = {
   }
 };
 
+Blockly.Blocks['http_get'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField(Blockly.Msg.HTTP_GET_URL)
+        .appendField(new Blockly.FieldTextInput("URL"), "URL");
+    this.appendDummyInput()
+        .appendField(Blockly.Msg.HTTP_GET_CLBK)
+        .appendField(new Blockly.FieldTextInput("onGetDone"), "CLBK");
+    this.setInputsInline(true);
+    this.setPreviousStatement(true, null);
+    this.setNextStatement(true, null);
+    this.setColour(ESPRUINO_COL);
+    this.setTooltip(Blockly.Msg.HTTP_GET_TOOLTIP);
+    this.setHelpUrl(Blockly.Msg.HTTP_GET_HELPURL);
+  }
+};
+
 /* callbacks */
+Blockly.JavaScript['http_get'] = function(block) {
+  var text_url = block.getFieldValue('URL');
+  var text_clbk = block.getFieldValue('CLBK');
+  var code = 'require("http").get("'+text_url+'", '+text_clbk+');\n';
+  return code;
+};
+
 Blockly.JavaScript['lcd_display_create_char'] = function(block) {
   var variable_disp = Blockly.JavaScript.variableDB_.getName(block.getFieldValue('DISP'), Blockly.Variables.NAME_TYPE);
   var value_char = Blockly.JavaScript.valueToCode(block, 'CHAR', Blockly.JavaScript.ORDER_ATOMIC);
@@ -1391,6 +1415,6 @@ Blockly.Blocks['json_parse'] = {
 
 Blockly.JavaScript['json_parse'] = function(block) {
   var value_string = Blockly.JavaScript.valueToCode(block, 'STRING', Blockly.JavaScript.ORDER_ATOMIC);
-  var code = '...';
+  var code = 'JSON.parse(' + value_string + ')';
   return [code, Blockly.JavaScript.ORDER_NONE];
 };

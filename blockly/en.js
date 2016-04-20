@@ -469,3 +469,7 @@ Blockly.Msg.JSON_STRINGIFY_ARRAY = "JSON stringify";
 Blockly.Msg.JSON_PARSE_STRING = "JSON parse";
 Blockly.Msg.JSON_PARSE_TOOLTIP = "Parses the JSON string to array";
 Blockly.Msg.JSON_PARSE_HELPURL = "http://www.espruino.com/Reference#l_JSON_parse";
+Blockly.Msg.HTTP_GET_HELPURL = "http://www.espruino.com/Reference#l_http_get";
+Blockly.Msg.HTTP_GET_TOOLTIP = "Creates HTTP GET request. When done it calls callback. Ex. cb(res)";
+Blockly.Msg.HTTP_GET_URL = "HTTP GET";
+Blockly.Msg.HTTP_GET_CLBK = "callback";

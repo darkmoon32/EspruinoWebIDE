@@ -67,9 +67,9 @@ for (var p in PORTS)
     PINS.push([pinname,pinname]);
   }
 
-var PWMS = [["PWM1","E9"],["PWM2","E11"],["PWM3","E13"],["PWM4","E14"],["PWM5","B14"],["PWM6","B15"],["PWM7","D13"],["PWM8","D12"],["PWM9","E5"],["PWM10","E6"],["PWM11","B0"],["PWM12","B1"],["PWM13","B4"],["PWM14","B5"],["PWM15","B8"],["PWM16","B9"]];
-var LEDS = [["RED1","D9"],["RED2","D8"],["RED3","C13"],["RED4","A8"],["GREEN1","B13"],["GREEN2","B12"],["GREEN3","D10"],["GREEN4","D11"]];
-var BTNS = [["BTN1","E10"],["BTN2","C5"],["BTN3","C4"],["BTN4","C3"],["BTN5","C2"]];
+var PWMS = [["PWM1","PWM1"],["PWM2","PWM2"],["PWM3","PWM3"],["PWM4","PWM4"],["PWM5","PWM5"],["PWM6","PWM6"],["PWM7","PWM7"],["PWM8","PWM8"],["PWM9","PWM9"],["PWM10","PWM10"],["PWM11","PWM11"],["PWM12","PWM12"],["PWM13","PWM13"],["PWM14","PWM14"],["PWM15","PWM15"],["PWM16","PWM16"]];
+var LEDS = [["RED1","RED1"],["RED2","RED2"],["RED3","RED3"],["RED4","RED4"],["GREEN1","GREEN1"],["GREEN2","GREEN2"],["GREEN3","GREEN3"],["GREEN4","GREEN4"]];
+var BTNS = [["BTN1","BTN1"],["BTN2","BTN2"],["BTN3","BTN3"],["BTN4","BTN4"],["BTN5","BTN5"]];
 var INS = [["PORT_IN1","{\"A0\":\"A7\",\"D0\":\"D6\",\"D1\":\"C12\",\"D2\":\"D2\"}"],["PORT_IN2","{\"A0\":\"A6\",\"D0\":\"D5\",\"D1\":\"B6\",\"D2\":\"B7\"}"],["PORT_IN3","{\"A0\":\"A5\",\"D0\":\"D4\",\"D1\":\"B10\",\"D2\":\"B11\"}"],["PORT_IN4","{\"A0\":\"A4\",\"D0\":\"D3\",\"D1\":\"C10\",\"D2\":\"C11\"}"],["PORT_OUT1","{\"A0\":\"D12\",\"D0\":\"D13\",\"D1\":\"D15\",\"D2\":\"D14\"}"],["PORT_OUT2","{\"A0\":\"B15\",\"D0\":\"B14\",\"D1\":\"C9\",\"D2\":\"C8\"}"],["PORT_OUT3","{\"A0\":\"E14\",\"D0\":\"E13\",\"D1\":\"A3\",\"D2\":\"A2\"}"],["PORT_OUT4","{\"A0\":\"E11\",\"D0\":\"E9\",\"D1\":\"A1\",\"D2\":\"A0\"}"]];
 
 Blockly.Blocks.espruino_timeout = {
@@ -1186,7 +1186,62 @@ Blockly.Blocks['http_get'] = {
   }
 };
 
+Blockly.Blocks['createap'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField(Blockly.Msg.WIFI_CREATEAP_SSID)
+        .appendField(new Blockly.FieldTextInput("SSID"), "SSID");
+    this.appendDummyInput()
+        .appendField(Blockly.Msg.WIFI_CREATEAP_PASSWORD)
+        .appendField(new Blockly.FieldTextInput("PASSWORD"), "PASSWORD");
+    this.appendDummyInput()
+        .appendField(Blockly.Msg.WIFI_CREATEAP_CHANNEL)
+        .appendField(new Blockly.FieldDropdown([["1", "1"], ["2", "2"], ["3", "3"], ["4", "4"], ["5", "5"], ["6", "6"], ["7", "7"], ["8", "8"], ["9", "9"], ["10", "10"], ["11", "11"], ["12", "12"], ["13", "13"]]), "CHANNEL");
+    this.appendDummyInput()
+        .appendField(Blockly.Msg.WIFI_CREATEAP_ENCODING)
+        .appendField(new Blockly.FieldDropdown([["open", "open"], ["wep", "wep"], ["wpa_psk", "wpa_psk"], ["wpa2_psk", "wpa2_psk"], ["wpa_wpa2_psk", "wpa_wpa2_psk"]]), "ENCODING");
+    this.appendStatementInput("CB")
+        .setCheck(null)
+        .appendField(Blockly.Msg.WIFI_CREATEAP_CB);
+    this.setInputsInline(true);
+    this.setPreviousStatement(true, null);
+    this.setNextStatement(true, null);
+    this.setTooltip(Blockly.Msg.WIFI_CREATEAP_TOOLTIP);
+    this.setColour(ESPRUINO_COL);
+    this.setHelpUrl(Blockly.Msg.WIFI_CREATEAP_HELPURL);
+  }
+};
+
+Blockly.Blocks['getconnecteddevices'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField(Blockly.Msg.WIFI_GET_CONNECTED_DEVICES_CB)
+        .appendField(new Blockly.FieldTextInput("getConnectedDevicesCB"), "CB");
+    this.setPreviousStatement(true, null);
+    this.setNextStatement(true, null);
+    this.setColour(ESPRUINO_COL);
+    this.setTooltip(Blockly.Msg.WIFI_GET_CONNECTED_DEVICES_TOOLTIP);
+    this.setHelpUrl(Blockly.Msg.WIFI_GET_CONNECTED_DEVICES_HELPURL);
+  }
+};
+
 /* callbacks */
+Blockly.JavaScript['getconnecteddevices'] = function(block) {
+  var text_cb = block.getFieldValue('CB');
+  var code = 'wifi.getConnectedDevices('+text_cb+');\n';
+  return code;
+};
+
+Blockly.JavaScript['createap'] = function(block) {
+  var text_ssid = block.getFieldValue('SSID');
+  var text_password = block.getFieldValue('PASSWORD');
+  var dropdown_channel = block.getFieldValue('CHANNEL');
+  var dropdown_encoding = block.getFieldValue('ENCODING');
+  var statements_cb = Blockly.JavaScript.statementToCode(block, 'CB');
+  var code = 'wifi.createAP("'+text_ssid+'","'+text_password+'",'+dropdown_channel+',"'+dropdown_encoding+'",function(err){\n\tif(err!==null)throw err;\n\t'+statements_cb+'});\n';
+  return code;
+};
+
 Blockly.JavaScript['http_get'] = function(block) {
   var text_url = block.getFieldValue('URL');
   var text_clbk = block.getFieldValue('CLBK');
@@ -1695,13 +1750,13 @@ Blockly.JavaScript['potenciometer'] = function(block) {
 
 Blockly.JavaScript['motor_driver'] = function(block) {
   var dropdown_in = JSON.parse(block.getFieldValue('IN'));
-  var value_speed = Math.min(Math.max(Blockly.JavaScript.valueToCode(block, 'speed', Blockly.JavaScript.ORDER_ATOMIC), 0), 1);
+  var value_speed = Blockly.JavaScript.valueToCode(block, 'speed', Blockly.JavaScript.ORDER_ATOMIC);
   var dropdown_direction = block.getFieldValue('DIRECTION');
   if(dropdown_direction == 'forward'){
-    return "digitalWrite(" + dropdown_in['A0'] + ", false);\nanalogWrite(" + dropdown_in['D0'] + ", " + value_speed + ", {freq:100});\n";
+    return "digitalWrite(" + dropdown_in['A0'] + ", false);\nanalogWrite(" + dropdown_in['D0'] + ", Math.min(Math.max(" + value_speed + ")), {freq:100});\n";
   }else if(dropdown_direction == 'reverse'){
-        return "digitalWrite(" + dropdown_in['D0'] + ", false);\nanalogWrite(" + dropdown_in['A0'] + ", " + value_speed + ", {freq:100});\n";
-  }else{
+        return "digitalWrite(" + dropdown_in['D0'] + ", false);\nanalogWrite(" + dropdown_in['A0'] + ", Math.min(Math.max(" + value_speed + ")), {freq:100});\n";
+  }else{0
         return "digitalWrite(" + dropdown_in['A0'] + ", false);\ndigitalWrite(" + dropdown_in['D0'] + ", false);\n";
   }
 };

@@ -1225,7 +1225,202 @@ Blockly.Blocks['getconnecteddevices'] = {
   }
 };
 
+
+Blockly.Blocks['spi_setup'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField(Blockly.Msg.SPI_SETUP_SPI)
+        .appendField(new Blockly.FieldDropdown([["spi1", "SPI1"], ["spi2", "SPI2"], ["spi3", "SPI3"]]), "SPI");
+    this.appendValueInput("MISO")
+        .setCheck(null)
+        .appendField(Blockly.Msg.SPI_SETUP_MISO);
+    this.appendValueInput("MOSI")
+        .setCheck(null)
+        .appendField(Blockly.Msg.SPI_SETUP_MOSI);
+    this.appendValueInput("SCK")
+        .setCheck(null)
+        .appendField(Blockly.Msg.SPI_SETUP_SCK);
+    this.setInputsInline(true);
+    this.setPreviousStatement(true);
+    this.setNextStatement(true);
+    this.setColour(ESPRUINO_COL);
+    this.setTooltip(Blockly.Msg.SPI_SETUP_TOOLTIP);
+    this.setHelpUrl(Blockly.Msg.SPI_SETUP_HELPURL);
+  }
+};
+
+Blockly.Blocks['rc522_init'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField(Blockly.Msg.RC522_INIT_SPI)
+        .appendField(new Blockly.FieldDropdown([["spi1", "SPI1"], ["spi2", "SPI2"], ["spi3", "spi3"]]), "SPI");
+    this.appendValueInput("CS")
+        .setCheck(null)
+        .appendField(Blockly.Msg.RC522_INIT_CS);
+    this.setInputsInline(true);
+    this.setOutput(true, null);
+    this.setColour(ESPRUINO_COL);
+    this.setTooltip(Blockly.Msg.RC522_INIT_TOOLTIP);
+    this.setHelpUrl(Blockly.Msg.RC522_INIT_HELPUPL);
+  }
+};
+
+Blockly.Blocks['rc522_findcards'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField(Blockly.Msg.RC522_FINDCARDS_RC522)
+        .appendField(new Blockly.FieldVariable("item"), "RC522");
+    this.appendDummyInput()
+        .appendField(Blockly.Msg.RC522_FINDCARDS_CLBK)
+        .appendField(new Blockly.FieldTextInput("onDone"), "CLBK");
+    this.setInputsInline(true);
+    this.setPreviousStatement(true);
+    this.setNextStatement(true);
+    this.setColour(ESPRUINO_COL);
+    this.setTooltip(Blockly.Msg.RC522_FINDCARDS_TOOLTIP);
+    this.setHelpUrl(Blockly.Msg.RC522_FINDCARDS_HELPURL);
+  }
+};
+
+Blockly.Blocks['json_stringify'] = {
+  init: function() {
+    this.appendValueInput("ARRAY")
+        .setCheck("Array")
+        .appendField(Blockly.Msg.JSON_STRINGIFY_ARRAY);
+    this.setInputsInline(true);
+    this.setOutput(true, "String");
+    this.setColour(ESPRUINO_COL);
+    this.setTooltip(Blockly.Msg.JSON_STRINGIFY_TOOLTIP);
+    this.setHelpUrl(Blockly.Msg.JSON_STRINGIFY_HELPURL);
+  }
+};
+
+Blockly.Blocks['json_parse'] = {
+  init: function() {
+    this.appendValueInput("STRING")
+        .setCheck("String")
+        .appendField(Blockly.Msg.JSON_PARSE_STRING);
+    this.setInputsInline(true);
+    this.setOutput(true, "Array");
+    this.setColour(ESPRUINO_COL);
+    this.setTooltip(Blockly.Msg.JSON_PARSE_TOOLTIP);
+    this.setHelpUrl(Blockly.Msg.JSON_PARSE_HELPURL);
+  }
+};
+
+/*servo module*/
+Blockly.Blocks['servo_move'] = {
+  init: function() {
+    this.appendValueInput("PIN")
+        .setCheck(null)
+        .appendField(Blockly.Msg.SERVO_MOVE_PIN);
+    this.appendValueInput("POS")
+        .setCheck("Number")
+        .appendField(Blockly.Msg.SERVO_MOVE_POSITION);
+    this.setInputsInline(true);
+    this.setPreviousStatement(true);
+    this.setNextStatement(true);
+    this.setColour(ESPRUINO_COL);
+    this.setTooltip(Blockly.Msg.SERVO_MOVE_TOOLTIP);
+  }
+};
+
 /* callbacks */
+Blockly.JavaScript.text_print = function() {
+  var argument0 = Blockly.JavaScript.valueToCode(this, 'TEXT',
+      Blockly.JavaScript.ORDER_NONE) || '\'\'';
+  return 'print(' + argument0 + ');\n';
+};
+Blockly.JavaScript.espruino_timeout = function() {
+  var seconds = Blockly.JavaScript.valueToCode(this, 'SECONDS',
+      Blockly.JavaScript.ORDER_ASSIGNMENT) || '1';
+  var branch = Blockly.JavaScript.statementToCode(this, 'DO');
+  return ["setTimeout(function() {\n"+branch+" }, "+seconds+"*1000.0)",Blockly.JavaScript.ORDER_ATOMIC];
+};
+Blockly.JavaScript.espruino_clear_timeout = function() {
+  var timeout = Blockly.JavaScript.valueToCode(this, 'TIMEOUT', Blockly.JavaScript.ORDER_ATOMIC) || '0';
+  return "clearTimeout("+timeout+");\n";
+};
+Blockly.JavaScript.espruino_getTime = function() {
+  return ["getTime()\n", Blockly.JavaScript.ORDER_ATOMIC];
+};
+
+Blockly.JavaScript.espruino_interval = function() {
+  var seconds = Blockly.JavaScript.valueToCode(this, 'SECONDS',
+      Blockly.JavaScript.ORDER_ASSIGNMENT) || '1';
+  var branch = Blockly.JavaScript.statementToCode(this, 'DO');
+  return ["setInterval(function() {\n"+branch+" }, "+seconds+"*1000.0)",Blockly.JavaScript.ORDER_ATOMIC];
+};
+Blockly.JavaScript.espruino_clear_interval = function() {
+  var intr = Blockly.JavaScript.valueToCode(this, 'INTERVAL', Blockly.JavaScript.ORDER_ATOMIC) || '0';
+  return "clearInterval("+intr+");\n";
+};
+Blockly.JavaScript.espruino_change_interval = function() {
+  var intr = Blockly.JavaScript.valueToCode(this, 'INTERVAL', Blockly.JavaScript.ORDER_ATOMIC) || '0';
+  var seconds = Blockly.JavaScript.valueToCode(this, 'SECONDS',
+      Blockly.JavaScript.ORDER_ASSIGNMENT) || '1';
+  return "changeInterval("+intr+","+seconds+"*1000.0);\n";
+};
+Blockly.JavaScript.espruino_pin = function() {
+  var code = this.getTitleValue('PIN');
+  return [code, Blockly.JavaScript.ORDER_ATOMIC];
+};
+Blockly.JavaScript.espruino_watch = function() {
+  var pin = Blockly.JavaScript.valueToCode(this, 'PIN', Blockly.JavaScript.ORDER_ASSIGNMENT) || '0';
+  var edge = this.getTitleValue('EDGE');
+  var branch = Blockly.JavaScript.statementToCode(this, 'DO');
+  var debounce = Blockly.JavaScript.valueToCode(this, 'DEBOUNCE', Blockly.JavaScript.ORDER_ASSIGNMENT) || '0';
+  var json = { repeat : true, edge : edge, debounce : debounce };
+  return "setWatch(function() {\n"+branch+" }, "+pin+", "+JSON.stringify(json)+");\n";
+};
+Blockly.JavaScript.espruino_digitalWrite = function() {
+  var pin = Blockly.JavaScript.valueToCode(this, 'PIN', Blockly.JavaScript.ORDER_ASSIGNMENT) || '0';
+  var val = Blockly.JavaScript.valueToCode(this, 'VAL', Blockly.JavaScript.ORDER_ASSIGNMENT) || '0';
+  return "digitalWrite("+pin+", "+val+");\n";
+};
+Blockly.JavaScript.espruino_digitalPulse = function() {
+  var pin = Blockly.JavaScript.valueToCode(this, 'PIN', Blockly.JavaScript.ORDER_ASSIGNMENT) || '0';
+  var val = Blockly.JavaScript.valueToCode(this, 'VAL', Blockly.JavaScript.ORDER_ASSIGNMENT) || '0';
+  var tim = Blockly.JavaScript.valueToCode(this, 'TIME', Blockly.JavaScript.ORDER_ASSIGNMENT) || '0';
+  return "digitalPulse("+pin+", "+val+", "+tim+");\n";
+};
+Blockly.JavaScript.espruino_digitalRead = function() {
+  var pin = Blockly.JavaScript.valueToCode(this, 'PIN', Blockly.JavaScript.ORDER_ASSIGNMENT) || '0';
+  return ["digitalRead("+pin+")\n", Blockly.JavaScript.ORDER_ATOMIC];
+};
+Blockly.JavaScript.espruino_analogWrite = function() {
+  var pin = Blockly.JavaScript.valueToCode(this, 'PIN', Blockly.JavaScript.ORDER_ASSIGNMENT) || '0';
+  var val = Blockly.JavaScript.valueToCode(this, 'VAL', Blockly.JavaScript.ORDER_ASSIGNMENT) || '0';
+  var freq = Blockly.JavaScript.valueToCode(this, 'FREQ', Blockly.JavaScript.ORDER_ASSIGNMENT) || '0';
+  if(freq > 0){
+    freq = ',{freq:' + freq + '}';
+  }
+  else
+    freq = '';
+  return "analogWrite("+pin+", "+val+""+freq+");\n";
+};
+Blockly.JavaScript.espruino_analogRead = function() {
+  var pin = Blockly.JavaScript.valueToCode(this, 'PIN', Blockly.JavaScript.ORDER_ASSIGNMENT) || '0';
+  return ["analogRead("+pin+")\n", Blockly.JavaScript.ORDER_ATOMIC];
+};
+Blockly.JavaScript.espruino_code = function() {
+  var code = JSON.stringify(this.getFieldValue("CODE"));
+  return "eval("+code+");\n";
+};
+
+Blockly.JavaScript.espruino_PWM_pin = function() {
+  var code = this.getTitleValue('PIN');
+  return [code, Blockly.JavaScript.ORDER_ATOMIC];
+};
+Blockly.JavaScript.espruino_BTN_pin = function() {
+  var code = this.getTitleValue('PIN');
+  return [code, Blockly.JavaScript.ORDER_ATOMIC];
+};
+Blockly.JavaScript.espruino_LED_pin = function() {
+  var code = this.getTitleValue('PIN');
+  return [code, Blockly.JavaScript.ORDER_ATOMIC];
+};
+
 Blockly.JavaScript['getconnecteddevices'] = function(block) {
   var text_cb = block.getFieldValue('CB');
   var code = 'wifi.getConnectedDevices('+text_cb+');\n';
@@ -1348,41 +1543,6 @@ Blockly.JavaScript['read_objects_property_'] = function(block) {
   }
 };
 
-Blockly.JavaScript.text_print = function() {
-  var argument0 = Blockly.JavaScript.valueToCode(this, 'TEXT',
-      Blockly.JavaScript.ORDER_NONE) || '\'\'';
-  return 'print(' + argument0 + ');\n';
-};
-Blockly.JavaScript.espruino_timeout = function() {
-  var seconds = Blockly.JavaScript.valueToCode(this, 'SECONDS',
-      Blockly.JavaScript.ORDER_ASSIGNMENT) || '1';
-  var branch = Blockly.JavaScript.statementToCode(this, 'DO');
-  return ["setTimeout(function() {\n"+branch+" }, "+seconds+"*1000.0)",Blockly.JavaScript.ORDER_ATOMIC];
-};
-Blockly.JavaScript.espruino_clear_timeout = function() {
-  var timeout = Blockly.JavaScript.valueToCode(this, 'TIMEOUT', Blockly.JavaScript.ORDER_ATOMIC) || '0';
-  return "clearTimeout("+timeout+");\n";
-};
-Blockly.JavaScript.espruino_getTime = function() {
-  return ["getTime()\n", Blockly.JavaScript.ORDER_ATOMIC];
-};
-/*servo module*/
-Blockly.Blocks['servo_move'] = {
-  init: function() {
-    this.appendValueInput("PIN")
-        .setCheck(null)
-        .appendField(Blockly.Msg.SERVO_MOVE_PIN);
-    this.appendValueInput("POS")
-        .setCheck("Number")
-        .appendField(Blockly.Msg.SERVO_MOVE_POSITION);
-    this.setInputsInline(true);
-    this.setPreviousStatement(true);
-    this.setNextStatement(true);
-    this.setColour(ESPRUINO_COL);
-    this.setTooltip(Blockly.Msg.SERVO_MOVE_TOOLTIP);
-  }
-};
-
 Blockly.JavaScript['servo_move'] = function(block) {
   var value_pin = Blockly.JavaScript.valueToCode(block, 'PIN', Blockly.JavaScript.ORDER_ATOMIC);
   var value_pos = Blockly.JavaScript.valueToCode(block, 'POS', Blockly.JavaScript.ORDER_ATOMIC);
@@ -1396,80 +1556,6 @@ Blockly.JavaScript['espruino_ebr00043l'] = function(block) {
   return ["digitalRead(" + dropdown_in['D1'] + ") * 2 + digitalRead(" + dropdown_in['D2'] + ") * 1", Blockly.JavaScript.ORDER_ATOMIC];
 };
 
-Blockly.JavaScript.espruino_interval = function() {
-  var seconds = Blockly.JavaScript.valueToCode(this, 'SECONDS',
-      Blockly.JavaScript.ORDER_ASSIGNMENT) || '1';
-  var branch = Blockly.JavaScript.statementToCode(this, 'DO');
-  return ["setInterval(function() {\n"+branch+" }, "+seconds+"*1000.0)",Blockly.JavaScript.ORDER_ATOMIC];
-};
-Blockly.JavaScript.espruino_clear_interval = function() {
-  var intr = Blockly.JavaScript.valueToCode(this, 'INTERVAL', Blockly.JavaScript.ORDER_ATOMIC) || '0';
-  return "clearInterval("+intr+");\n";
-};
-Blockly.JavaScript.espruino_change_interval = function() {
-  var intr = Blockly.JavaScript.valueToCode(this, 'INTERVAL', Blockly.JavaScript.ORDER_ATOMIC) || '0';
-  var seconds = Blockly.JavaScript.valueToCode(this, 'SECONDS',
-      Blockly.JavaScript.ORDER_ASSIGNMENT) || '1';
-  return "changeInterval("+intr+","+seconds+"*1000.0);\n";
-};
-Blockly.JavaScript.espruino_pin = function() {
-  var code = this.getTitleValue('PIN');
-  return [code, Blockly.JavaScript.ORDER_ATOMIC];
-};
-Blockly.JavaScript.espruino_PWM_pin = function() {
-  var code = this.getTitleValue('PIN');
-  return [code, Blockly.JavaScript.ORDER_ATOMIC];
-};
-Blockly.JavaScript.espruino_BTN_pin = function() {
-  var code = this.getTitleValue('PIN');
-  return [code, Blockly.JavaScript.ORDER_ATOMIC];
-};
-Blockly.JavaScript.espruino_LED_pin = function() {
-  var code = this.getTitleValue('PIN');
-  return [code, Blockly.JavaScript.ORDER_ATOMIC];
-};
-Blockly.JavaScript.espruino_watch = function() {
-  var pin = Blockly.JavaScript.valueToCode(this, 'PIN', Blockly.JavaScript.ORDER_ASSIGNMENT) || '0';
-  var edge = this.getTitleValue('EDGE');
-  var branch = Blockly.JavaScript.statementToCode(this, 'DO');
-  var debounce = Blockly.JavaScript.valueToCode(this, 'DEBOUNCE', Blockly.JavaScript.ORDER_ASSIGNMENT) || '0';
-  var json = { repeat : true, edge : edge, debounce : debounce };
-  return "setWatch(function() {\n"+branch+" }, "+pin+", "+JSON.stringify(json)+");\n";
-};
-Blockly.JavaScript.espruino_digitalWrite = function() {
-  var pin = Blockly.JavaScript.valueToCode(this, 'PIN', Blockly.JavaScript.ORDER_ASSIGNMENT) || '0';
-  var val = Blockly.JavaScript.valueToCode(this, 'VAL', Blockly.JavaScript.ORDER_ASSIGNMENT) || '0';
-  return "digitalWrite("+pin+", "+val+");\n";
-};
-Blockly.JavaScript.espruino_digitalPulse = function() {
-  var pin = Blockly.JavaScript.valueToCode(this, 'PIN', Blockly.JavaScript.ORDER_ASSIGNMENT) || '0';
-  var val = Blockly.JavaScript.valueToCode(this, 'VAL', Blockly.JavaScript.ORDER_ASSIGNMENT) || '0';
-  var tim = Blockly.JavaScript.valueToCode(this, 'TIME', Blockly.JavaScript.ORDER_ASSIGNMENT) || '0';
-  return "digitalPulse("+pin+", "+val+", "+tim+");\n";
-};
-Blockly.JavaScript.espruino_digitalRead = function() {
-  var pin = Blockly.JavaScript.valueToCode(this, 'PIN', Blockly.JavaScript.ORDER_ASSIGNMENT) || '0';
-  return ["digitalRead("+pin+")\n", Blockly.JavaScript.ORDER_ATOMIC];
-};
-Blockly.JavaScript.espruino_analogWrite = function() {
-  var pin = Blockly.JavaScript.valueToCode(this, 'PIN', Blockly.JavaScript.ORDER_ASSIGNMENT) || '0';
-  var val = Blockly.JavaScript.valueToCode(this, 'VAL', Blockly.JavaScript.ORDER_ASSIGNMENT) || '0';
-  var freq = Blockly.JavaScript.valueToCode(this, 'FREQ', Blockly.JavaScript.ORDER_ASSIGNMENT) || '0';
-  if(freq > 0){
-    freq = ',{freq:' + freq + '}';
-  }
-  else
-    freq = '';
-  return "analogWrite("+pin+", "+val+""+freq+");\n";
-};
-Blockly.JavaScript.espruino_analogRead = function() {
-  var pin = Blockly.JavaScript.valueToCode(this, 'PIN', Blockly.JavaScript.ORDER_ASSIGNMENT) || '0';
-  return ["analogRead("+pin+")\n", Blockly.JavaScript.ORDER_ATOMIC];
-};
-Blockly.JavaScript.espruino_code = function() {
-  var code = JSON.stringify(this.getFieldValue("CODE"));
-  return "eval("+code+");\n";
-};
 /*
  * Code generation for HC-SR04 sensor connection
  */
@@ -1610,29 +1696,6 @@ Blockly.JavaScript.create_web_server = function()
   return ["require('http').createServer("+onPageRequest+").listen("+port+")", Blockly.JavaScript.ORDER_ATOMIC];
 };
 
-Blockly.Blocks['spi_setup'] = {
-  init: function() {
-    this.appendDummyInput()
-        .appendField(Blockly.Msg.SPI_SETUP_SPI)
-        .appendField(new Blockly.FieldDropdown([["spi1", "SPI1"], ["spi2", "SPI2"], ["spi3", "SPI3"]]), "SPI");
-    this.appendValueInput("MISO")
-        .setCheck(null)
-        .appendField(Blockly.Msg.SPI_SETUP_MISO);
-    this.appendValueInput("MOSI")
-        .setCheck(null)
-        .appendField(Blockly.Msg.SPI_SETUP_MOSI);
-    this.appendValueInput("SCK")
-        .setCheck(null)
-        .appendField(Blockly.Msg.SPI_SETUP_SCK);
-    this.setInputsInline(true);
-    this.setPreviousStatement(true);
-    this.setNextStatement(true);
-    this.setColour(ESPRUINO_COL);
-    this.setTooltip(Blockly.Msg.SPI_SETUP_TOOLTIP);
-    this.setHelpUrl(Blockly.Msg.SPI_SETUP_HELPURL);
-  }
-};
-
 Blockly.JavaScript['spi_setup'] = function(block) {
   var dropdown_spi = block.getFieldValue('SPI');
   var value_miso = Blockly.JavaScript.valueToCode(block, 'MISO', Blockly.JavaScript.ORDER_ATOMIC);
@@ -1642,44 +1705,11 @@ Blockly.JavaScript['spi_setup'] = function(block) {
   return code;
 };
 
-Blockly.Blocks['rc522_init'] = {
-  init: function() {
-    this.appendDummyInput()
-        .appendField(Blockly.Msg.RC522_INIT_SPI)
-        .appendField(new Blockly.FieldDropdown([["spi1", "SPI1"], ["spi2", "SPI2"], ["spi3", "spi3"]]), "SPI");
-    this.appendValueInput("CS")
-        .setCheck(null)
-        .appendField(Blockly.Msg.RC522_INIT_CS);
-    this.setInputsInline(true);
-    this.setOutput(true, null);
-    this.setColour(ESPRUINO_COL);
-    this.setTooltip(Blockly.Msg.RC522_INIT_TOOLTIP);
-    this.setHelpUrl(Blockly.Msg.RC522_INIT_HELPUPL);
-  }
-};
-
 Blockly.JavaScript['rc522_init'] = function(block) {
   var dropdown_spi = block.getFieldValue('SPI');
   var value_cs = Blockly.JavaScript.valueToCode(block, 'CS', Blockly.JavaScript.ORDER_ATOMIC);
   var code = 'require("MFRC522").connect(' + dropdown_spi + ', ' + value_cs + ')';
   return [code, Blockly.JavaScript.ORDER_ATOMIC];
-};
-
-Blockly.Blocks['rc522_findcards'] = {
-  init: function() {
-    this.appendDummyInput()
-        .appendField(Blockly.Msg.RC522_FINDCARDS_RC522)
-        .appendField(new Blockly.FieldVariable("item"), "RC522");
-    this.appendDummyInput()
-        .appendField(Blockly.Msg.RC522_FINDCARDS_CLBK)
-        .appendField(new Blockly.FieldTextInput("onDone"), "CLBK");
-    this.setInputsInline(true);
-    this.setPreviousStatement(true);
-    this.setNextStatement(true);
-    this.setColour(ESPRUINO_COL);
-    this.setTooltip(Blockly.Msg.RC522_FINDCARDS_TOOLTIP);
-    this.setHelpUrl(Blockly.Msg.RC522_FINDCARDS_HELPURL);
-  }
 };
 
 Blockly.JavaScript['rc522_findcards'] = function(block) {
@@ -1689,36 +1719,10 @@ Blockly.JavaScript['rc522_findcards'] = function(block) {
   return code;
 };
 
-Blockly.Blocks['json_stringify'] = {
-  init: function() {
-    this.appendValueInput("ARRAY")
-        .setCheck("Array")
-        .appendField(Blockly.Msg.JSON_STRINGIFY_ARRAY);
-    this.setInputsInline(true);
-    this.setOutput(true, "String");
-    this.setColour(ESPRUINO_COL);
-    this.setTooltip(Blockly.Msg.JSON_STRINGIFY_TOOLTIP);
-    this.setHelpUrl(Blockly.Msg.JSON_STRINGIFY_HELPURL);
-  }
-};
-
 Blockly.JavaScript['json_stringify'] = function(block) {
   var value_array = Blockly.JavaScript.valueToCode(block, 'ARRAY', Blockly.JavaScript.ORDER_ATOMIC);
   var code = 'JSON.stringify(' + value_array + ')';
   return [code, Blockly.JavaScript.ORDER_FUNCTION_CALL];
-};
-
-Blockly.Blocks['json_parse'] = {
-  init: function() {
-    this.appendValueInput("STRING")
-        .setCheck("String")
-        .appendField(Blockly.Msg.JSON_PARSE_STRING);
-    this.setInputsInline(true);
-    this.setOutput(true, "Array");
-    this.setColour(ESPRUINO_COL);
-    this.setTooltip(Blockly.Msg.JSON_PARSE_TOOLTIP);
-    this.setHelpUrl(Blockly.Msg.JSON_PARSE_HELPURL);
-  }
 };
 
 Blockly.JavaScript['json_parse'] = function(block) {

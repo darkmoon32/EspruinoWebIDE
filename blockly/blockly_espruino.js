@@ -4,18 +4,39 @@
  This Source Code is subject to the terms of the Mozilla Public
  License, v2.0. If a copy of the MPL was not distributed with this
  file, You can obtain one at http://mozilla.org/MPL/2.0/.
- 
+
  ------------------------------------------------------------------
   Blockly blocks for Espruino
  ------------------------------------------------------------------
-**/    
+**/
 
 // --------------------------------- Blockly init code - see /js/core/editorBlockly.js
 window.onload = function() {
-  Blockly.inject(document.body,{path: '', toolbox: document.getElementById('toolbox')});
-  Blockly.Xml.domToWorkspace(Blockly.mainWorkspace, document.getElementById('blocklyInitial')); 
+  var toolbox = document.getElementById('toolbox');
+  // Remove any stuff we don't want from the toolbox...
+  for (var i=0;i<toolbox.children.length;i++) {
+    var enable_if = toolbox.children[i].attributes.enable_if;
+    if (enable_if) {
+      var keep = false;
+      if (window.location.search && window.location.search.indexOf("%7C"+enable_if.value+"%7C")>=0)
+        keep = true;
+      if (!keep) {
+        toolbox.removeChild(toolbox.children[i]);
+        i--;
+      }
+    }
+  }
+  // Set up blockly from toolbox
+  Blockly.inject(document.body,{path: '', toolbox: toolbox});
+  // Set up initial code
+  Blockly.Xml.domToWorkspace(Blockly.mainWorkspace, document.getElementById('blocklyInitial'));
+  // Notify parent
   window.parent.blocklyLoaded(Blockly, window); // see core/editorBlockly.js
 };
+
+/* TODO: Looks like we could use Blockly.JavaScript.indentLines(code, Blockly.JavaScript.INDENT)
+to properly sort out the padding of all this stuff */
+
 // When we have JSON from the board, use it to
 // update our list of available pins
 Blockly.setBoardJSON = function(info) {
@@ -52,8 +73,13 @@ Blockly.setBoardJSON = function(info) {
     s = "OUT"+i;
     if (s in info.devices) INS.push(["PORT_"+s,JSON.stringify(info.devices[s])]);
   }
-  for (i in info.pins)
-    PINS.push([info.pins[i].name, info.pins[i].name]);
+  for (i in info.pins){
+    if(info.pins[i]){
+    	PINS.push([info.pins[i].name, info.pins[i].name]);
+    }
+  
+  }
+  
 };
 // ---------------------------------
 
@@ -62,7 +88,7 @@ var ESPRUINO_COL = 190;
 var PORTS = ["A","B","C"];
 var PINS = [];
 for (var p in PORTS)
-  for (var i=0;i<16;i++) {
+  for (i=0;i<16;i++) {
     var pinname = PORTS[p]+i;
     PINS.push([pinname,pinname]);
   }
@@ -71,22 +97,38 @@ var PWMS = [["PWM1","PWM1"],["PWM2","PWM2"],["PWM3","PWM3"],["PWM4","PWM4"],["PW
 var LEDS = [["RED1","RED1"],["RED2","RED2"],["RED3","RED3"],["RED4","RED4"],["GREEN1","GREEN1"],["GREEN2","GREEN2"],["GREEN3","GREEN3"],["GREEN4","GREEN4"]];
 var BTNS = [["BTN1","BTN1"],["BTN2","BTN2"],["BTN3","BTN3"],["BTN4","BTN4"],["BTN5","BTN5"]];
 var INS = [["PORT_IN1","{\"A0\":\"A7\",\"D0\":\"D6\",\"D1\":\"C12\",\"D2\":\"D2\"}"],["PORT_IN2","{\"A0\":\"A6\",\"D0\":\"D5\",\"D1\":\"B6\",\"D2\":\"B7\"}"],["PORT_IN3","{\"A0\":\"A5\",\"D0\":\"D4\",\"D1\":\"B10\",\"D2\":\"B11\"}"],["PORT_IN4","{\"A0\":\"A4\",\"D0\":\"D3\",\"D1\":\"C10\",\"D2\":\"C11\"}"],["PORT_OUT1","{\"A0\":\"D12\",\"D0\":\"D13\",\"D1\":\"D15\",\"D2\":\"D14\"}"],["PORT_OUT2","{\"A0\":\"B15\",\"D0\":\"B14\",\"D1\":\"C9\",\"D2\":\"C8\"}"],["PORT_OUT3","{\"A0\":\"E14\",\"D0\":\"E13\",\"D1\":\"A3\",\"D2\":\"A2\"}"],["PORT_OUT4","{\"A0\":\"E11\",\"D0\":\"E9\",\"D1\":\"A1\",\"D2\":\"A0\"}"]];
+Blockly.Blocks.espruino_delay = {
+  category: 'Espruino',
+  init: function() {
+      this.appendValueInput('SECONDS')
+          .setCheck('Number')
+          .appendField(Blockly.Msg.ESPRUINO_WAIT);
+      this.appendDummyInput()
+          .appendField(Blockly.Msg.ESPRUINO_SECONDS);
+
+    this.setPreviousStatement(true);
+    this.setNextStatement(true);
+    this.setColour(ESPRUINO_COL);
+    this.setInputsInline(true);
+    this.setTooltip(Blockly.Msg.ESPRUINO_WAIT_TOOLTIP);
+  }
+};
 
 Blockly.Blocks.espruino_timeout = {
   category: 'Espruino',
   init: function() {
       this.appendValueInput('SECONDS')
           .setCheck('Number')
-          .appendField('wait');
+          .appendField(Blockly.Msg.ESPRUINO_AFTER);
       this.appendDummyInput()
-          .appendField("seconds");
+          .appendField(Blockly.Msg.ESPRUINO_SECONDS);
       this.appendStatementInput('DO')
-           .appendField('do');
+          .appendField(Blockly.Msg.CONTROLS_REPEAT_INPUT_DO);
 
     this.setOutput(true,null);
     this.setColour(ESPRUINO_COL);
     this.setInputsInline(true);
-    this.setTooltip('Waits for a certain period before running code');
+    this.setTooltip(Blockly.Msg.ESPRUINO_AFTER_TOOLTIP);
   }
 };
 
@@ -108,15 +150,15 @@ Blockly.Blocks.espruino_interval = {
   init: function() {
       this.appendValueInput('SECONDS')
           .setCheck('Number')
-          .appendField('every');
+          .appendField(Blockly.Msg.ESPRUINO_EVERY);
       this.appendDummyInput()
-          .appendField("seconds");
+          .appendField(Blockly.Msg.ESPRUINO_SECONDS);
       this.appendStatementInput('DO')
-           .appendField('do');
+           .appendField(Blockly.Msg.CONTROLS_REPEAT_INPUT_DO);
     this.setOutput(true, null);
     this.setColour(ESPRUINO_COL);
     this.setInputsInline(true);
-    this.setTooltip('Runs code repeatedly, every so many seconds');
+    this.setTooltip(Blockly.Msg.ESPRUINO_EVERY_TOOLTIP );
   }
 };
 
@@ -152,23 +194,22 @@ Blockly.Blocks.espruino_change_interval = {
 Blockly.Blocks.espruino_pin = {
 //      category: 'Espruino',
   init: function() {
-    
+
     var start = 0;
     var incrementStep = 10;
-    var originalPin = undefined;
+    var originalPin;
     var listGen = function() {
       originalPin = this.value_;
       var list = PINS.slice(start, start+incrementStep);
-      if (start>0) list.unshift(['Back...', 'Back']);
-      if (start+incrementStep<PINS.length) list.push(['More...', 'More']);        
+      if (start>0) list.unshift([Blockly.Msg.ESPRUINO_BACK+"...", Blockly.Msg.ESPRUINO_BACK]);
+      if (start+incrementStep<PINS.length) list.push([Blockly.Msg.ESPRUINO_MORE + '...', Blockly.Msg.ESPRUINO_MORE]);
       return list;
-    };    
-    
+    };
+
     var pinSelector = new Blockly.FieldDropdown(listGen, function(selection){
-      var ret = undefined;
-      
-      if (selection == "More" || selection == "Back") {  
-        if (selection == "More")
+
+      if (selection == Blockly.Msg.ESPRUINO_MORE || selection == Blockly.Msg.ESPRUINO_BACK) {
+        if (selection == Blockly.Msg.ESPRUINO_MORE)
           start += incrementStep;
         else
           start -= incrementStep;
@@ -193,7 +234,7 @@ Blockly.Blocks.espruino_LED_pin = {
     
     var start = 0;
     var incrementStep = 10;
-    var originalPin = undefined;
+    var originalPin;
     var listGen = function() {
       originalPin = this.value_;
       var list = LEDS.slice(start, start+incrementStep);
@@ -203,7 +244,6 @@ Blockly.Blocks.espruino_LED_pin = {
     };    
     
     var pinSelector = new Blockly.FieldDropdown(listGen, function(selection){
-      var ret = undefined;
       
       if (selection == "More" || selection == "Back") {  
         if (selection == "More")
@@ -231,7 +271,7 @@ Blockly.Blocks.espruino_BTN_pin = {
     
     var start = 0;
     var incrementStep = 10;
-    var originalPin = undefined;
+    var originalPin;
     var listGen = function() {
       originalPin = this.value_;
       var list = BTNS.slice(start, start+incrementStep);
@@ -241,7 +281,6 @@ Blockly.Blocks.espruino_BTN_pin = {
     };    
     
     var pinSelector = new Blockly.FieldDropdown(listGen, function(selection){
-      var ret = undefined;
       
       if (selection == "More" || selection == "Back") {  
         if (selection == "More")
@@ -253,7 +292,7 @@ Blockly.Blocks.espruino_BTN_pin = {
         setTimeout(function(){t.showEditor_();},1);
 
         return originalPin;
-      }      
+      }
     });
     
     this.setColour(ESPRUINO_COL);
@@ -269,7 +308,7 @@ Blockly.Blocks.espruino_PWM_pin = {
     
     var start = 0;
     var incrementStep = 10;
-    var originalPin = undefined;
+    var originalPin;
     var listGen = function() {
       originalPin = this.value_;
       var list = PWMS.slice(start, start+incrementStep);
@@ -279,7 +318,6 @@ Blockly.Blocks.espruino_PWM_pin = {
     };    
     
     var pinSelector = new Blockly.FieldDropdown(listGen, function(selection){
-      var ret = undefined;
       
       if (selection == "More" || selection == "Back") {  
         if (selection == "More")
@@ -297,11 +335,11 @@ Blockly.Blocks.espruino_PWM_pin = {
     this.setColour(ESPRUINO_COL);
     this.setOutput(true, 'Pin');
     this.appendDummyInput().appendField(pinSelector, 'PIN');
-    this.setTooltip('The Name of a Pin');
+    this.setTooltip(Blockly.Msg.ESPRUINO_PIN_NAME);
   },
 };
 
-Blockly.Blocks['switch'] = {
+Blockly.Blocks.switch = {
   init: function() {
     this.appendDummyInput()
         .appendField(Blockly.Msg.SWITCH_IN)
@@ -313,7 +351,7 @@ Blockly.Blocks['switch'] = {
   }
 };
 
-Blockly.Blocks['watch_switch'] = {
+Blockly.Blocks.watch_switch = {
   init: function() {
     this.appendDummyInput()
         .appendField(Blockly.Msg.WATCH_SWITCH_IN)
@@ -339,7 +377,7 @@ EDGES: [
 ["falling", 'falling']]
 };
 
-Blockly.Blocks['encoder_connect'] = {
+Blockly.Blocks.encoder_connect = {
   init: function() {
     this.appendDummyInput()
         .appendField(Blockly.Msg.ENCODER_CONNECT_IN)
@@ -355,7 +393,7 @@ Blockly.Blocks['encoder_connect'] = {
   }
 };
 
-Blockly.Blocks['encoder_get'] = {
+Blockly.Blocks.encoder_get = {
   init: function() {
     this.appendDummyInput()
         .appendField(Blockly.Msg.ENCODER_GET_VAR)
@@ -370,7 +408,7 @@ Blockly.Blocks['encoder_get'] = {
   }
 };
 
-Blockly.Blocks['encoder_reset'] = {
+Blockly.Blocks.encoder_reset = {
   init: function() {
     this.appendDummyInput()
         .appendField(Blockly.Msg.ENCODER_RESET_VAR)
@@ -383,7 +421,7 @@ Blockly.Blocks['encoder_reset'] = {
   }
 };
 
-Blockly.Blocks['potenciometer'] = {
+Blockly.Blocks.potenciometer = {
   init: function() {
     this.appendDummyInput()
         .appendField(Blockly.Msg.POTENCIOMETER_IN)
@@ -396,7 +434,7 @@ Blockly.Blocks['potenciometer'] = {
   }
 };
 
-Blockly.Blocks['motor_driver'] = {
+Blockly.Blocks.motor_driver = {
   init: function() {
     this.appendDummyInput()
         .appendField("Motor. Port")
@@ -420,20 +458,20 @@ Blockly.Blocks.espruino_watch = {
   init: function() {
       this.appendValueInput('PIN')
           .setCheck('Pin')
-          .appendField('watch');	
+          .appendField(Blockly.Msg.ESPRUINO_WATCH);
       this.appendDummyInput()
            .appendField(new Blockly.FieldDropdown(this.EDGES), 'EDGE').appendField('edge');
       this.appendValueInput('DEBOUNCE')
           .setCheck('Number')
           .appendField('debounce');
       this.appendStatementInput('DO')
-           .appendField('do');
+           .appendField(Blockly.Msg.CONTROLS_REPEAT_INPUT_DO);
 
     this.setPreviousStatement(true);
     this.setNextStatement(true);
     this.setColour(ESPRUINO_COL);
     this.setInputsInline(true);
-    this.setTooltip('Runs code when an input changes');
+    this.setTooltip(Blockly.Msg.ESPRUINO_WATCH_TOOLTIP);
   },
 EDGES: [
 ["both", 'both'],
@@ -445,17 +483,17 @@ EDGES: [
 Blockly.Blocks.espruino_getTime = {
     category: 'Espruino',
     init: function() {
-      this.appendDummyInput().appendField('Time');
+      this.appendDummyInput().appendField(Blockly.Msg.ESPRUINO_TIME);
       this.setOutput(true, 'Number');
       this.setColour(230/*Number*/);
       this.setInputsInline(true);
-      this.setTooltip('Read the current time in seconds');
+      this.setTooltip(Blockly.Msg.ESPRUINO_TIME_TOOLTIP);
     }
   };
 
 	
 /*EBR00043L block*/
-Blockly.Blocks['espruino_ebr00043l'] = {
+Blockly.Blocks.espruino_ebr00043l = {
   init: function() {
     this.appendDummyInput()
         .appendField(Blockly.Msg.LINEFINDER_IN)
@@ -470,7 +508,7 @@ Blockly.Blocks['espruino_ebr00043l'] = {
 /*
  * Block for HC-SR04 sensor connection
  */
-Blockly.Blocks['hcsr04_def'] = {
+Blockly.Blocks.hcsr04_def = {
   init: function() {
     this.appendDummyInput()
         .appendField(Blockly.Msg.HCSR04_IN)
@@ -542,16 +580,16 @@ Blockly.Blocks.espruino_digitalWrite = {
   init: function() {
       this.appendValueInput('PIN')
           .setCheck('Pin')
-          .appendField('digitalWrite Pin');
+          .appendField(Blockly.Msg.ESPRUINO_DIGITALWRITE);
       this.appendValueInput('VAL')
           .setCheck(['Number','Boolean'])
-          .appendField('Value');
+          .appendField(Blockly.Msg.ESPRUINO_VALUE);
 
     this.setPreviousStatement(true);
     this.setNextStatement(true);
     this.setColour(ESPRUINO_COL);
     this.setInputsInline(true);
-    this.setTooltip('Writes a Digital Value to a Pin');
+    this.setTooltip(Blockly.Msg.ESPRUINO_DIGITALWRITE_TOOLTIP);
   }
 };
 Blockly.Blocks.espruino_digitalPulse = {
@@ -559,18 +597,18 @@ Blockly.Blocks.espruino_digitalPulse = {
     init: function() {
         this.appendValueInput('PIN')
             .setCheck('Pin')
-            .appendField('digitalPulse Pin');
+            .appendField(Blockly.Msg.ESPRUINO_DIGITALPULSE);
         this.appendValueInput('VAL')
             .setCheck(['Boolean']);
         this.appendValueInput('TIME')
             .setCheck(['Number'])
-            .appendField('Milliseconds');
+            .appendField(Blockly.Msg.ESPRUINO_MILLISECONDS);
 
       this.setPreviousStatement(true);
       this.setNextStatement(true);
       this.setColour(ESPRUINO_COL);
       this.setInputsInline(true);
-      this.setTooltip('Pulses a pin for the given number of milliseconds');
+      this.setTooltip(Blockly.Msg.ESPRUINO_DIGITALPULSE_TOOLTIP);
     }
   };
 Blockly.Blocks.espruino_digitalRead = {
@@ -578,12 +616,12 @@ Blockly.Blocks.espruino_digitalRead = {
   init: function() {
       this.appendValueInput('PIN')
           .setCheck('Pin')
-          .appendField('digitalRead Pin');
+          .appendField(Blockly.Msg.ESPRUINO_DIGITALREAD);
 
     this.setOutput(true, 'Boolean');
     this.setColour(ESPRUINO_COL);
     this.setInputsInline(true);
-    this.setTooltip('Read a Digital Value from a Pin');
+    this.setTooltip(Blockly.Msg.ESPRUINO_DIGITALREAD_TOOLTIP);
   }
 };
 
@@ -592,10 +630,10 @@ Blockly.Blocks.espruino_analogWrite = {
     init: function() {
         this.appendValueInput('PIN')
             .setCheck('Pin')
-            .appendField('analogWrite Pin');
+            .appendField(Blockly.Msg.ESPRUINO_ANALOGWRITE);
         this.appendValueInput('VAL')
             .setCheck(['Number','Boolean'])
-            .appendField('Value');
+            .appendField(Blockly.Msg.ESPRUINO_VALUE);
         this.appendValueInput('FREQ')
             .setCheck('Number')
             .appendField('Frequency');
@@ -604,7 +642,7 @@ Blockly.Blocks.espruino_analogWrite = {
       this.setNextStatement(true);
       this.setColour(ESPRUINO_COL);
       this.setInputsInline(true);
-      this.setTooltip('Writes an Analog Value to a Pin');
+      this.setTooltip(Blockly.Msg.ESPRUINO_ANALOGWRITE_TOOLTIP);
     }
   };
 Blockly.Blocks.espruino_analogRead = {
@@ -612,25 +650,105 @@ Blockly.Blocks.espruino_analogRead = {
     init: function() {
         this.appendValueInput('PIN')
             .setCheck('Pin')
-            .appendField('analogRead Pin');
+            .appendField(Blockly.Msg.ESPRUINO_ANALOGREAD);
 
       this.setOutput(true, 'Number');
       this.setColour(ESPRUINO_COL);
       this.setInputsInline(true);
-      this.setTooltip('Read an Analog Value from a Pin');
+      this.setTooltip(Blockly.Msg.ESPRUINO_ANALOGREAD_TOOLTIP);
     }
   };
-
-Blockly.Blocks.espruino_code = {
+Blockly.Blocks.espruino_pinMode = {
     category: 'Espruino',
     init: function() {
-      this.appendDummyInput().appendField(new Blockly.FieldTextArea("// Enter JavaScript Code Here"),"CODE");
+        this.appendValueInput('PIN')
+            .setCheck('Pin')
+            .appendField(Blockly.Msg.ESPRUINO_PINMODE);
+        this.appendDummyInput()
+            .appendField(new Blockly.FieldDropdown(this.PINMODES), 'MODE');
 
       this.setPreviousStatement(true);
       this.setNextStatement(true);
       this.setColour(ESPRUINO_COL);
       this.setInputsInline(true);
-      this.setTooltip('Executes the given JavaScript code');
+      this.setTooltip(Blockly.Msg.ESPRUINO_PINODE_TOOLTIP);
+    },
+  PINMODES: [
+  ["input", 'input'],
+  ["input_pulldown", 'input_pulldown'],
+  ["input_pullup", 'input_pullup'],
+  ["output", 'output']]
+};
+
+Blockly.Blocks.espruino_code = {
+    category: 'Espruino',
+    init: function() {
+      this.appendDummyInput().appendField(new Blockly.FieldTextArea("// Enter JavaScript Statements Here"),"CODE");
+
+      this.setPreviousStatement(true);
+      this.setNextStatement(true);
+      this.setColour(ESPRUINO_COL);
+      this.setInputsInline(true);
+      this.setTooltip(Blockly.Msg.ESPRUINO_JS_TOOLTIP);
+    }
+  };
+
+  Blockly.Blocks.espruino_jsexpression = {
+      category: 'Espruino',
+      init: function() {
+        this.appendDummyInput().appendField(new Blockly.FieldTextInput('"A JavaScript "+"Expression"'),"EXPR");
+        this.setOutput(true, 'String');
+        this.setColour(ESPRUINO_COL);
+        this.setInputsInline(true);
+        this.setTooltip(Blockly.Msg.ESPRUINO_JSEXPR_TOOLTIP);
+      }
+    };
+// -----------------------------------------------------------------------------------
+Blockly.Blocks.hw_servoMove = {
+  category: 'Espruino',
+  init: function() {
+    this.appendValueInput('PIN')
+        .setCheck('Pin')
+        .appendField(Blockly.Msg.ESPRUINO_MOVE_SERVO);
+    this.appendValueInput('VAL')
+        .setCheck(['Number','Boolean'])
+        .appendField(Blockly.Msg.ESPRUINO_TO);
+
+    this.setPreviousStatement(true);
+    this.setNextStatement(true);
+    this.setColour(ESPRUINO_COL);
+    this.setInputsInline(true);
+    this.setTooltip(Blockly.Msg.ESPRUINO_MOVE_SERVO_TOOLTIP);
+  }
+};
+Blockly.Blocks.hw_servoStop = {
+  category: 'Espruino',
+  init: function() {
+    this.appendValueInput('PIN')
+        .setCheck('Pin')
+        .appendField(Blockly.Msg.ESPRUINO_STOP_SERVO);
+
+    this.setPreviousStatement(true);
+    this.setNextStatement(true);
+    this.setColour(ESPRUINO_COL);
+    this.setInputsInline(true);
+    this.setTooltip(Blockly.Msg.ESPRUINO_STOP_SERVO_TOOLTIP);
+
+  }
+};
+Blockly.Blocks.hw_ultrasonic = {
+    category: 'Espruino',
+    init: function() {
+      this.appendValueInput('TRIG')
+          .setCheck('Pin')
+          .appendField(Blockly.Msg.ESPRUINO_ULTRASONIC_GET_TRIG);
+      this.appendValueInput('ECHO')
+          .setCheck('Pin')
+          .appendField(Blockly.Msg.ESPRUINO_ULTRASONIC_ECHO);
+      this.setOutput(true, 'Number');
+      this.setColour(ESPRUINO_COL);
+      this.setInputsInline(true);
+      this.setTooltip(Blockly.Msg.ESPRUINO_ULTRASONIC_TOOLTIP);
     }
   };
 
@@ -746,7 +864,7 @@ Blockly.Blocks.create_server = {
   };
 
 /*Bind socket's callbacks*/
-Blockly.Blocks['bind_callbacks'] = {
+Blockly.Blocks.bind_callbacks = {
   category: "Wifi",
   init: function() {
     this.appendDummyInput()
@@ -792,7 +910,7 @@ Blockly.Blocks.connect_server = {
   };
 
 /*send data*/
-Blockly.Blocks['send_data'] = {
+Blockly.Blocks.send_data = {
   category: "Wifi",
   init: function() {
     this.appendValueInput("DATA")
@@ -835,7 +953,7 @@ Blockly.Blocks.create_web_server = {
   };
 
 /* Create web server - end */
-Blockly.Blocks['read_objects_property_mutator'] = {
+Blockly.Blocks.read_objects_property_mutator = {
   /**
    * Mutator block for add items.
    * @this Blockly.Block
@@ -851,7 +969,7 @@ Blockly.Blocks['read_objects_property_mutator'] = {
   }
 };
 
-Blockly.Blocks['read_objects_property_mutator_container'] = {
+Blockly.Blocks.read_objects_property_mutator_container = {
 	init:function(){
 		this.setColour(ESPRUINO_COL);
 		this.appendDummyInput().appendField(Blockly.Msg.READ_OBJECTS_PROPERTY_MUTATOR_CONTAINER_TITLE);
@@ -861,7 +979,7 @@ Blockly.Blocks['read_objects_property_mutator_container'] = {
 	}
 };
 
-Blockly.Blocks['read_objects_property_'] = {
+Blockly.Blocks.read_objects_property_ = {
   /**
    * Block for creating a string made up of any number of elements of any type.
    * @this Blockly.Block
@@ -971,13 +1089,13 @@ Blockly.Blocks['read_objects_property_'] = {
       }
     }
     // Rebuild block.
-    if (this.itemCount_ == 0) {
+    if (this.itemCount_ === 0) {
       this.appendDummyInput('EMPTY')
-          .appendField(Blockly.Msg.READ_OBJECTS_PROPERTY_NO_KEY)
+          .appendField(Blockly.Msg.READ_OBJECTS_PROPERTY_NO_KEY);
     } else {
       for (var i = 0; i < this.itemCount_; i++) {
         var input = this.appendValueInput('KEY' + i);
-        if (i == 0) {
+        if (i === 0) {
           input.appendField(Blockly.Msg.READ_OBJECTS_PROPERTY);
         }
       }
@@ -985,7 +1103,7 @@ Blockly.Blocks['read_objects_property_'] = {
   }
 };
 
-Blockly.Blocks['url_parse'] = {
+Blockly.Blocks.url_parse = {
   init: function() {
     this.appendDummyInput()
         .appendField(Blockly.Msg.URL_PARSE_URL_TEXT)
@@ -999,9 +1117,9 @@ Blockly.Blocks['url_parse'] = {
     this.setTooltip(Blockly.Msg.URL_PARSE_TOOLTIP);
     this.setHelpUrl(Blockly.Msg.URL_PARSE_HELPURL);
   }
-}
+};
 
-Blockly.Blocks['httpsrs_end'] = {
+Blockly.Blocks.httpsrs_end = {
   init: function() {
     this.appendDummyInput()
         .appendField(Blockly.Msg.HTTPSRS_END_TEXT)
@@ -1017,7 +1135,7 @@ Blockly.Blocks['httpsrs_end'] = {
   }
 };
 
-Blockly.Blocks['httpsrs_writehead'] = {
+Blockly.Blocks.httpsrs_writehead = {
   init: function() {
     this.appendDummyInput()
         .appendField(Blockly.Msg.HTTPSRS_WRITEHEAD_TEXT)
@@ -1040,7 +1158,7 @@ Blockly.Blocks['httpsrs_writehead'] = {
   }
 };
 
-Blockly.Blocks['text_charCodeAt'] = {
+Blockly.Blocks.text_charCodeAt = {
   init: function() {
     this.appendValueInput("STR")
         .setCheck("String")
@@ -1056,7 +1174,7 @@ Blockly.Blocks['text_charCodeAt'] = {
   }
 };
 
-Blockly.Blocks['text_fromcharcode'] = {
+Blockly.Blocks.text_fromcharcode = {
   init: function() {
     this.appendValueInput("CHARCODE")
         .setCheck("Number")
@@ -1070,7 +1188,7 @@ Blockly.Blocks['text_fromcharcode'] = {
 };
 
 /* LCD HD44780 */
-Blockly.Blocks['lcd_display_init'] = {
+Blockly.Blocks.lcd_display_init = {
   init: function() {
     this.appendValueInput("RS")
         .setCheck(null)
@@ -1098,7 +1216,7 @@ Blockly.Blocks['lcd_display_init'] = {
   }
 };
 
-Blockly.Blocks['lcd_display_clear'] = {
+Blockly.Blocks.lcd_display_clear = {
   init: function() {
     this.appendDummyInput()
         .appendField(Blockly.Msg.LCD_CLEAR_DISP)
@@ -1112,7 +1230,7 @@ Blockly.Blocks['lcd_display_clear'] = {
   }
 };
 
-Blockly.Blocks['lcd_display_print'] = {
+Blockly.Blocks.lcd_display_print = {
   init: function() {
     this.appendDummyInput()
         .appendField(Blockly.Msg.LCD_PRINT_DISP)
@@ -1129,7 +1247,7 @@ Blockly.Blocks['lcd_display_print'] = {
   }
 };
 
-Blockly.Blocks['lcd_display_set_cursor'] = {
+Blockly.Blocks.lcd_display_set_cursor = {
   init: function() {
     this.appendDummyInput()
         .appendField(Blockly.Msg.LCD_SET_CURSOR_DISP)
@@ -1149,7 +1267,7 @@ Blockly.Blocks['lcd_display_set_cursor'] = {
   }
 };
 
-Blockly.Blocks['lcd_display_create_char'] = {
+Blockly.Blocks.lcd_display_create_char = {
   init: function() {
     this.appendDummyInput()
         .appendField(Blockly.Msg.LCD_CREATE_CHAR_DISP)
@@ -1169,7 +1287,7 @@ Blockly.Blocks['lcd_display_create_char'] = {
   }
 };
 
-Blockly.Blocks['http_get'] = {
+Blockly.Blocks.http_get = {
   init: function() {
     this.appendDummyInput()
         .appendField(Blockly.Msg.HTTP_GET_URL)
@@ -1186,7 +1304,7 @@ Blockly.Blocks['http_get'] = {
   }
 };
 
-Blockly.Blocks['createap'] = {
+Blockly.Blocks.createap = {
   init: function() {
     this.appendDummyInput()
         .appendField(Blockly.Msg.WIFI_CREATEAP_SSID)
@@ -1212,7 +1330,7 @@ Blockly.Blocks['createap'] = {
   }
 };
 
-Blockly.Blocks['getconnecteddevices'] = {
+Blockly.Blocks.getconnecteddevices = {
   init: function() {
     this.appendDummyInput()
         .appendField(Blockly.Msg.WIFI_GET_CONNECTED_DEVICES_CB)
@@ -1226,7 +1344,7 @@ Blockly.Blocks['getconnecteddevices'] = {
 };
 
 
-Blockly.Blocks['spi_setup'] = {
+Blockly.Blocks.spi_setup = {
   init: function() {
     this.appendDummyInput()
         .appendField(Blockly.Msg.SPI_SETUP_SPI)
@@ -1249,7 +1367,7 @@ Blockly.Blocks['spi_setup'] = {
   }
 };
 
-Blockly.Blocks['rc522_init'] = {
+Blockly.Blocks.rc522_init = {
   init: function() {
     this.appendDummyInput()
         .appendField(Blockly.Msg.RC522_INIT_SPI)
@@ -1265,7 +1383,7 @@ Blockly.Blocks['rc522_init'] = {
   }
 };
 
-Blockly.Blocks['rc522_findcards'] = {
+Blockly.Blocks.rc522_findcards = {
   init: function() {
     this.appendDummyInput()
         .appendField(Blockly.Msg.RC522_FINDCARDS_RC522)
@@ -1282,7 +1400,7 @@ Blockly.Blocks['rc522_findcards'] = {
   }
 };
 
-Blockly.Blocks['json_stringify'] = {
+Blockly.Blocks.json_stringify = {
   init: function() {
     this.appendValueInput("ARRAY")
         .setCheck("Array")
@@ -1295,7 +1413,7 @@ Blockly.Blocks['json_stringify'] = {
   }
 };
 
-Blockly.Blocks['json_parse'] = {
+Blockly.Blocks.json_parse = {
   init: function() {
     this.appendValueInput("STRING")
         .setCheck("String")
@@ -1309,7 +1427,7 @@ Blockly.Blocks['json_parse'] = {
 };
 
 /*servo module*/
-Blockly.Blocks['servo_move'] = {
+Blockly.Blocks.servo_move = {
   init: function() {
     this.appendValueInput("PIN")
         .setCheck(null)
@@ -1325,11 +1443,20 @@ Blockly.Blocks['servo_move'] = {
   }
 };
 
-/* callbacks */
+// -----------------------------------------------------------------------------------
+// -----------------------------------------------------------------------------------
+// -----------------------------------------------------------------------------------
+// -----------------------------------------------------------------------------------
+
 Blockly.JavaScript.text_print = function() {
   var argument0 = Blockly.JavaScript.valueToCode(this, 'TEXT',
       Blockly.JavaScript.ORDER_NONE) || '\'\'';
   return 'print(' + argument0 + ');\n';
+};
+Blockly.JavaScript.espruino_delay = function() {
+  var seconds = Blockly.JavaScript.valueToCode(this, 'SECONDS',
+      Blockly.JavaScript.ORDER_ASSIGNMENT) || '1';
+  return "var t=getTime()+"+seconds+";while(getTime()<t);\n";
 };
 Blockly.JavaScript.espruino_timeout = function() {
   var seconds = Blockly.JavaScript.valueToCode(this, 'SECONDS',
@@ -1344,7 +1471,6 @@ Blockly.JavaScript.espruino_clear_timeout = function() {
 Blockly.JavaScript.espruino_getTime = function() {
   return ["getTime()\n", Blockly.JavaScript.ORDER_ATOMIC];
 };
-
 Blockly.JavaScript.espruino_interval = function() {
   var seconds = Blockly.JavaScript.valueToCode(this, 'SECONDS',
       Blockly.JavaScript.ORDER_ASSIGNMENT) || '1';
@@ -1403,11 +1529,65 @@ Blockly.JavaScript.espruino_analogRead = function() {
   var pin = Blockly.JavaScript.valueToCode(this, 'PIN', Blockly.JavaScript.ORDER_ASSIGNMENT) || '0';
   return ["analogRead("+pin+")\n", Blockly.JavaScript.ORDER_ATOMIC];
 };
+Blockly.JavaScript.espruino_pinMode = function() {
+  var pin = Blockly.JavaScript.valueToCode(this, 'PIN', Blockly.JavaScript.ORDER_ASSIGNMENT) || '0';
+  var mode = this.getTitleValue('MODE');
+  return "pinMode("+pin+", "+JSON.stringify(mode)+");\n";
+};
 Blockly.JavaScript.espruino_code = function() {
   var code = JSON.stringify(this.getFieldValue("CODE"));
   return "eval("+code+");\n";
 };
-
+Blockly.JavaScript.espruino_PWM_pin = function() {
+  var code = this.getTitleValue('PIN');
+  return [code, Blockly.JavaScript.ORDER_ATOMIC];
+};
+Blockly.JavaScript.espruino_BTN_pin = function() {
+  var code = this.getTitleValue('PIN');
+  return [code, Blockly.JavaScript.ORDER_ATOMIC];
+};
+Blockly.JavaScript.espruino_LED_pin = function() {
+  var code = this.getTitleValue('PIN');
+  return [code, Blockly.JavaScript.ORDER_ATOMIC];
+};
+Blockly.JavaScript.espruino_jsexpression = function() {
+  var code = this.getFieldValue("EXPR");
+  return [code, Blockly.JavaScript.ORDER_ATOMIC];
+};
+// -----------------------------------------------------------------------------------
+Blockly.JavaScript.hw_servoMove = function() {
+  var pin = Blockly.JavaScript.valueToCode(this, 'PIN', Blockly.JavaScript.ORDER_ASSIGNMENT) || '0';
+  var val = Blockly.JavaScript.valueToCode(this, 'VAL', Blockly.JavaScript.ORDER_ASSIGNMENT) || '0';
+  return "analogWrite("+pin+", (1.5+0.7*("+val+"))/20, {freq:50});\n";
+};
+Blockly.JavaScript.hw_servoStop = function() {
+  var pin = Blockly.JavaScript.valueToCode(this, 'PIN', Blockly.JavaScript.ORDER_ASSIGNMENT) || '0';
+  return "digitalWrite("+pin+", 0);\n";
+};
+Blockly.JavaScript.hw_ultrasonic = function() {
+  var trig = Blockly.JavaScript.valueToCode(this, 'TRIG', Blockly.JavaScript.ORDER_ASSIGNMENT) || '0';
+  var echo = Blockly.JavaScript.valueToCode(this, 'ECHO', Blockly.JavaScript.ORDER_ASSIGNMENT) || '0';
+  var funcVar = "ultrasonic"+trig+echo;
+  var distanceVar = "dist"+trig+echo;
+  var watchVar = "isListening"+trig+echo;
+  var functionName = Blockly.JavaScript.provideFunction_(
+    funcVar,
+    [ "function " + Blockly.JavaScript.FUNCTION_NAME_PLACEHOLDER_ + "() {",
+      "  if (!global."+distanceVar+") {",
+      "    "+distanceVar+"=[0];",
+      "    setWatch(",
+      "      function(e) {",
+      "        "+distanceVar+"="+distanceVar+".slice(-4);",
+      "        "+distanceVar+".push((e.time-e.lastTime)*17544); },",
+      "      "+echo+", {repeat:true, edge:'falling'});",
+      "    setInterval(",
+      "      function(e) { digitalPulse("+trig+", 1, 0.01); }, 50);",
+      "  }",
+      "  var d = "+distanceVar+".slice(0).sort();",
+      "  return d[d.length>>1];",
+      "}"]);
+  return [funcVar+"()", Blockly.JavaScript.ORDER_ATOMIC];
+};
 Blockly.JavaScript.espruino_PWM_pin = function() {
   var code = this.getTitleValue('PIN');
   return [code, Blockly.JavaScript.ORDER_ATOMIC];
@@ -1421,13 +1601,13 @@ Blockly.JavaScript.espruino_LED_pin = function() {
   return [code, Blockly.JavaScript.ORDER_ATOMIC];
 };
 
-Blockly.JavaScript['getconnecteddevices'] = function(block) {
+Blockly.JavaScript.getconnecteddevices = function(block) {
   var text_cb = block.getFieldValue('CB');
   var code = 'wifi.getConnectedDevices('+text_cb+');\n';
   return code;
 };
 
-Blockly.JavaScript['createap'] = function(block) {
+Blockly.JavaScript.createap = function(block) {
   var text_ssid = block.getFieldValue('SSID');
   var text_password = block.getFieldValue('PASSWORD');
   var dropdown_channel = block.getFieldValue('CHANNEL');
@@ -1437,14 +1617,14 @@ Blockly.JavaScript['createap'] = function(block) {
   return code;
 };
 
-Blockly.JavaScript['http_get'] = function(block) {
+Blockly.JavaScript.http_get = function(block) {
   var text_url = block.getFieldValue('URL');
   var text_clbk = block.getFieldValue('CLBK');
   var code = 'require("http").get("'+text_url+'", '+text_clbk+');\n';
   return code;
 };
 
-Blockly.JavaScript['lcd_display_create_char'] = function(block) {
+Blockly.JavaScript.lcd_display_create_char = function(block) {
   var variable_disp = Blockly.JavaScript.variableDB_.getName(block.getFieldValue('DISP'), Blockly.Variables.NAME_TYPE);
   var value_char = Blockly.JavaScript.valueToCode(block, 'CHAR', Blockly.JavaScript.ORDER_ATOMIC);
   var value_data = Blockly.JavaScript.valueToCode(block, 'DATA', Blockly.JavaScript.ORDER_ATOMIC);
@@ -1452,7 +1632,7 @@ Blockly.JavaScript['lcd_display_create_char'] = function(block) {
   return code;
 };
 
-Blockly.JavaScript['lcd_display_set_cursor'] = function(block) {
+Blockly.JavaScript.lcd_display_set_cursor = function(block) {
   var variable_disp = Blockly.JavaScript.variableDB_.getName(block.getFieldValue('DISP'), Blockly.Variables.NAME_TYPE);
   var dropdown_x = block.getFieldValue('X');
   var dropdown_y = block.getFieldValue('Y');
@@ -1460,20 +1640,20 @@ Blockly.JavaScript['lcd_display_set_cursor'] = function(block) {
   return code;
 };
 
-Blockly.JavaScript['lcd_display_print'] = function(block) {
+Blockly.JavaScript.lcd_display_print = function(block) {
   var variable_disp = Blockly.JavaScript.variableDB_.getName(block.getFieldValue('DISP'), Blockly.Variables.NAME_TYPE);
   var value_text = Blockly.JavaScript.valueToCode(block, 'TEXT', Blockly.JavaScript.ORDER_ATOMIC);
   var code = variable_disp + '.print(' + value_text + ');\n';
   return code;
 };
 
-Blockly.JavaScript['lcd_display_clear'] = function(block) {
+Blockly.JavaScript.lcd_display_clear = function(block) {
   var variable_disp = Blockly.JavaScript.variableDB_.getName(block.getFieldValue('DISP'), Blockly.Variables.NAME_TYPE);
   var code = variable_disp + '.clear();\n';
   return code;
 };
 
-Blockly.JavaScript['lcd_display_init'] = function(block) {
+Blockly.JavaScript.lcd_display_init = function(block) {
   var value_rs = Blockly.JavaScript.valueToCode(block, 'RS', Blockly.JavaScript.ORDER_ATOMIC);
   var value_e = Blockly.JavaScript.valueToCode(block, 'E', Blockly.JavaScript.ORDER_ATOMIC);
   var value_d4 = Blockly.JavaScript.valueToCode(block, 'D4', Blockly.JavaScript.ORDER_ATOMIC);
@@ -1484,20 +1664,20 @@ Blockly.JavaScript['lcd_display_init'] = function(block) {
   return [code, Blockly.JavaScript.ORDER_NONE];
 };
 
-Blockly.JavaScript['text_fromcharcode'] = function(block) {
+Blockly.JavaScript.text_fromcharcode = function(block) {
   var value_charcode = Blockly.JavaScript.valueToCode(block, 'CHARCODE', Blockly.JavaScript.ORDER_ATOMIC);
   var code = 'String.fromCharCode(' + value_charcode + ")";
   return [code, Blockly.JavaScript.ORDER_NONE];
 };
 
-Blockly.JavaScript['text_charCodeAt'] = function(block) {
+Blockly.JavaScript.text_charCodeAt = function(block) {
   var value_str = Blockly.JavaScript.valueToCode(block, 'STR', Blockly.JavaScript.ORDER_ATOMIC);
   var value_pos = Blockly.JavaScript.valueToCode(block, 'POS', Blockly.JavaScript.ORDER_ATOMIC);
   var code = value_str + ".charCodeAt(" + ( value_pos - 1 ) + ")";
   return [code, Blockly.JavaScript.ORDER_NONE];
 };
 
-Blockly.JavaScript['httpsrs_writehead'] = function(block) {
+Blockly.JavaScript.httpsrs_writehead = function(block) {
   var variable_var = Blockly.JavaScript.variableDB_.getName(block.getFieldValue('VAR'), Blockly.Variables.NAME_TYPE);
   var value_code = Blockly.JavaScript.valueToCode(block, 'CODE', Blockly.JavaScript.ORDER_ATOMIC);
   var value_keys = Blockly.JavaScript.valueToCode(block, 'KEYS', Blockly.JavaScript.ORDER_ATOMIC);
@@ -1517,23 +1697,23 @@ Blockly.JavaScript['httpsrs_writehead'] = function(block) {
   return code;
 };
 
-Blockly.JavaScript['httpsrs_end'] = function(block) {
+Blockly.JavaScript.httpsrs_end = function(block) {
   var variable_var = Blockly.JavaScript.variableDB_.getName(block.getFieldValue('VAR'), Blockly.Variables.NAME_TYPE);
   var value_data = Blockly.JavaScript.valueToCode(block, 'DATA', Blockly.JavaScript.ORDER_ATOMIC) || '';
   var code = variable_var + '.end(' + value_data + ');\n';
   return code;
 };
 
-Blockly.JavaScript['url_parse'] = function(block) {
+Blockly.JavaScript.url_parse = function(block) {
   var variable_url = Blockly.JavaScript.variableDB_.getName(block.getFieldValue('URL'), Blockly.Variables.NAME_TYPE);
   var value_PARSEQUERY = Blockly.JavaScript.valueToCode(block, 'PARSEQUERY', Blockly.JavaScript.ORDER_ATOMIC) || true;
   var code = 'url.parse('+variable_url+', '+value_PARSEQUERY+')';
   return [code, Blockly.JavaScript.ORDER_ATOMIC];
 };
 
-Blockly.JavaScript['read_objects_property_'] = function(block) {
+Blockly.JavaScript.read_objects_property_ = function(block) {
   var code = Blockly.JavaScript.valueToCode(block, 'VAR', Blockly.JavaScript.ORDER_ATOMIC) || 'this';
-  if (block.itemCount_ == 0) {
+  if (block.itemCount_ === 0) {
     return [code, Blockly.JavaScript.ORDER_ATOMIC];
   } else {
     for (var n = 0; n < block.itemCount_; n++) {
@@ -1543,41 +1723,35 @@ Blockly.JavaScript['read_objects_property_'] = function(block) {
   }
 };
 
-Blockly.JavaScript['servo_move'] = function(block) {
+Blockly.JavaScript.servo_move = function(block) {
   var value_pin = Blockly.JavaScript.valueToCode(block, 'PIN', Blockly.JavaScript.ORDER_ATOMIC);
   var value_pos = Blockly.JavaScript.valueToCode(block, 'POS', Blockly.JavaScript.ORDER_ATOMIC);
   var code = 'analogWrite(' + value_pin + ', (1 + Math.min(Math.max(' + value_pos + ', 0), 1)) / 20,{freq : 50});\n';
   return code;
 };
 
-/*EBR00043L module*/
-Blockly.JavaScript['espruino_ebr00043l'] = function(block) {
+//EBR00043L module
+Blockly.JavaScript.espruino_ebr00043l = function(block) {
   var dropdown_in = JSON.parse(block.getFieldValue('IN'));
-  return ["digitalRead(" + dropdown_in['D1'] + ") * 2 + digitalRead(" + dropdown_in['D2'] + ") * 1", Blockly.JavaScript.ORDER_ATOMIC];
+  return ["digitalRead(" + dropdown_in.D1 + ") * 2 + digitalRead(" + dropdown_in.D2 + ") * 1", Blockly.JavaScript.ORDER_ATOMIC];
 };
 
-/*
- * Code generation for HC-SR04 sensor connection
- */
-Blockly.JavaScript['hcsr04_def'] = function(block) {
+// Code generation for HC-SR04 sensor connection
+Blockly.JavaScript.hcsr04_def = function(block) {
   var dropdown_in = JSON.parse(block.getFieldValue('IN'));
   var text_do = block.getFieldValue('DO');
-  var code = 'require(\"HC-SR04\").connect(' + dropdown_in['D2'] + ', ' + dropdown_in['D1'] + ', ' + text_do + ')';
+  var code = 'require(\"HC-SR04\").connect(' + dropdown_in.D2 + ', ' + dropdown_in.D1 + ', ' + text_do + ')';
   return [code, Blockly.JavaScript.ORDER_NONE];
 };
 
-/*
- * Code generation for HC-SR04 sensor read
- */
+// Code generation for HC-SR04 sensor read
 Blockly.JavaScript.HCSR04_read = function()
 {
   var sensor = Blockly.JavaScript.valueToCode(this, 'sensor', Blockly.JavaScript.ORDER_ATOMIC) || '0';
   var code = sensor + '.trigger();';
   return code;
 };
-/*
- * Code generation for YL-64 sensor connection
- */
+// Code generation for YL-64 sensor connection
 Blockly.JavaScript.YL64_def = function()
 {
   var S0 = Blockly.JavaScript.valueToCode(this, 'S0', Blockly.JavaScript.ORDER_ATOMIC) || '0';
@@ -1588,17 +1762,15 @@ Blockly.JavaScript.YL64_def = function()
   return [ 'require("TCS3200").connect(' + S0 + ', ' + S1 + ', ' + S2 + ', ' + S3 + ', ' + OUT + ')', Blockly.JavaScript.ORDER_ATOMIC ];
 };
 
-/*
- * Code generation for YL-64 sensor read
- */
+// Code generation for YL-64 sensor read
 Blockly.JavaScript.YL64_read = function()
 {
   var sensor = Blockly.JavaScript.valueToCode(this, 'sensor', Blockly.JavaScript.ORDER_ATOMIC) || '0';
   return [sensor + '.getColor()', Blockly.JavaScript.ORDER_ATOMIC];
 };
 
-/*wifi*/
-/*wifi esp8266 connect*/
+//wifi
+//wifi esp8266 connect
 Blockly.JavaScript.esp8266_connect = function()
 {
   var ser = this.getTitleValue('SER');
@@ -1610,7 +1782,7 @@ Blockly.JavaScript.esp8266_connect = function()
     "var wifi = require('ESP8266WiFi_0v25').connect("+ser+", function(err){\nif(err)throw err;\n"+cb+"});\n";
 };
 
-/*connect to SSID*/
+//connect to SSID
 Blockly.JavaScript.connect_ssid = function()
 {
   var ssid = this.getFieldValue("SSID");
@@ -1619,35 +1791,35 @@ Blockly.JavaScript.connect_ssid = function()
   return "wifi.connect('"+ssid+"','"+pass+"', function(err){\nif(err)throw err;\n"+cb+"});\n";
 };
 
-/*get IP*/
+//get IP
 Blockly.JavaScript.get_IP = function()
 {
   var cb = this.getFieldValue("DO");
   return "wifi.getIP("+cb+");\n";
 };
 
-/*get AP*/
+//get AP
 Blockly.JavaScript.get_APs = function()
 {
   var cb = this.getFieldValue("DO");
   return "wifi.getAPs("+cb+");\n";
 };
 
-/*get version*/
+//get version
 Blockly.JavaScript.get_version = function()
 {
   var cb = this.getFieldValue("DO");
   return "wifi.getVersion("+cb+");\n";
 };
 
-/*get version*/
+//get version
 Blockly.JavaScript.get_connected = function()
 {
   var cb = this.getFieldValue("DO");
   return "wifi.getConnectedDevices("+cb+");\n";
 };
 
-/*create server*/
+//create server
 Blockly.JavaScript.create_server = function()
 {
   var onIncoming = this.getFieldValue("ONINCOMING");
@@ -1655,8 +1827,8 @@ Blockly.JavaScript.create_server = function()
   return "require('net').createServer(" + onIncoming + ").listen("+port+");\n";
 };
 
-/*Bind socket's callbacks*/
-Blockly.JavaScript['bind_callbacks'] = function(block) {
+//Bind socket's callbacks
+Blockly.JavaScript.bind_callbacks = function(block) {
   var variable_var = Blockly.JavaScript.variableDB_.getName(block.getFieldValue('VAR'), Blockly.Variables.NAME_TYPE);
   var text_ondata = block.getFieldValue('ONDATA');
   var text_onclose = block.getFieldValue('ONCLOSE');
@@ -1664,7 +1836,7 @@ Blockly.JavaScript['bind_callbacks'] = function(block) {
   return code;
 };
 
-/*connect server*/
+//connect server
 Blockly.JavaScript.connect_server = function()
 {
   var host = this.getFieldValue("HOST");
@@ -1675,8 +1847,8 @@ Blockly.JavaScript.connect_server = function()
   return ["require('net').connect({host: '"+host+"', port: "+port+"},function(c){\nc.on('data', "+onData+");\nc.on('close', "+onClose+");\n"+cb+"\n})", Blockly.JavaScript.ORDER_ATOMIC];
 };
 
-/*send data*/
-Blockly.JavaScript['send_data'] = function(block) {
+//send data
+Blockly.JavaScript.send_data = function(block) {
   var value_data = Blockly.JavaScript.valueToCode(block, 'DATA', Blockly.JavaScript.ORDER_ATOMIC) || "";
   var value_socket = Blockly.JavaScript.valueToCode(block, 'SOCKET', Blockly.JavaScript.ORDER_ATOMIC) || 'this';
   var checkbox_close = block.getFieldValue('CLOSE') == 'TRUE';
@@ -1688,7 +1860,7 @@ Blockly.JavaScript['send_data'] = function(block) {
   return code;
 };
 
-/*create web server*/
+//create web server
 Blockly.JavaScript.create_web_server = function()
 {
   var onPageRequest = this.getFieldValue("ONPAGEREQUEST");
@@ -1696,7 +1868,7 @@ Blockly.JavaScript.create_web_server = function()
   return ["require('http').createServer("+onPageRequest+").listen("+port+")", Blockly.JavaScript.ORDER_ATOMIC];
 };
 
-Blockly.JavaScript['spi_setup'] = function(block) {
+Blockly.JavaScript.spi_setup = function(block) {
   var dropdown_spi = block.getFieldValue('SPI');
   var value_miso = Blockly.JavaScript.valueToCode(block, 'MISO', Blockly.JavaScript.ORDER_ATOMIC);
   var value_mosi = Blockly.JavaScript.valueToCode(block, 'MOSI', Blockly.JavaScript.ORDER_ATOMIC);
@@ -1705,80 +1877,80 @@ Blockly.JavaScript['spi_setup'] = function(block) {
   return code;
 };
 
-Blockly.JavaScript['rc522_init'] = function(block) {
+Blockly.JavaScript.rc522_init = function(block) {
   var dropdown_spi = block.getFieldValue('SPI');
   var value_cs = Blockly.JavaScript.valueToCode(block, 'CS', Blockly.JavaScript.ORDER_ATOMIC);
   var code = 'require("MFRC522").connect(' + dropdown_spi + ', ' + value_cs + ')';
   return [code, Blockly.JavaScript.ORDER_ATOMIC];
 };
 
-Blockly.JavaScript['rc522_findcards'] = function(block) {
+Blockly.JavaScript.rc522_findcards = function(block) {
   var variable_rc522 = Blockly.JavaScript.variableDB_.getName(block.getFieldValue('RC522'), Blockly.Variables.NAME_TYPE);
   var text_clbk = block.getFieldValue('CLBK');
   var code = variable_rc522 + '.findCards(' + text_clbk + ');\n';
   return code;
 };
 
-Blockly.JavaScript['json_stringify'] = function(block) {
+Blockly.JavaScript.json_stringify = function(block) {
   var value_array = Blockly.JavaScript.valueToCode(block, 'ARRAY', Blockly.JavaScript.ORDER_ATOMIC);
   var code = 'JSON.stringify(' + value_array + ')';
   return [code, Blockly.JavaScript.ORDER_FUNCTION_CALL];
 };
 
-Blockly.JavaScript['json_parse'] = function(block) {
+Blockly.JavaScript.json_parse = function(block) {
   var value_string = Blockly.JavaScript.valueToCode(block, 'STRING', Blockly.JavaScript.ORDER_ATOMIC);
   var code = 'JSON.parse(' + value_string + ')';
   return [code, Blockly.JavaScript.ORDER_NONE];
 };
 
-Blockly.JavaScript['switch'] = function(block) {
+Blockly.JavaScript.switch = function(block) {
   var dropdown_in = JSON.parse(block.getFieldValue('IN'));
-  var code = "digitalRead(" + dropdown_in['D2'] + ")";
+  var code = "digitalRead(" + dropdown_in.D2 + ")";
   return [code, Blockly.JavaScript.ORDER_NONE];
 };
 
-Blockly.JavaScript['watch_switch'] = function(block) {
+Blockly.JavaScript.watch_switch = function(block) {
   var dropdown_in = JSON.parse(block.getFieldValue('IN'));
   var dropdown_edge = block.getFieldValue('EDGE');
   var value_debounce = Blockly.JavaScript.valueToCode(block, 'DEBOUNCE', Blockly.JavaScript.ORDER_ATOMIC);
   var statements_do = Blockly.JavaScript.statementToCode(block, 'DO');
   var json = { repeat : true, edge : dropdown_edge, debounce : value_debounce };
-  return "setWatch(function() {\n"+statements_do+" }, "+dropdown_in['D2']+", "+JSON.stringify(json)+");\n";
+  return "setWatch(function() {\n"+statements_do+" }, "+dropdown_in.D2+", "+JSON.stringify(json)+");\n";
 };
 
-Blockly.JavaScript['potenciometer'] = function(block) {
+Blockly.JavaScript.potenciometer = function(block) {
   var dropdown_in = JSON.parse(block.getFieldValue('IN'));
-  var code = 'analogRead(' + dropdown_in['A0'] + ')';
+  var code = 'analogRead(' + dropdown_in.A0 + ')';
   return [code, Blockly.JavaScript.ORDER_NONE];
 };
 
-Blockly.JavaScript['motor_driver'] = function(block) {
+Blockly.JavaScript.motor_driver = function(block) {
   var dropdown_in = JSON.parse(block.getFieldValue('IN'));
   var value_speed = Blockly.JavaScript.valueToCode(block, 'speed', Blockly.JavaScript.ORDER_ATOMIC);
   var dropdown_direction = block.getFieldValue('DIRECTION');
   if(dropdown_direction == 'forward'){
-    return "digitalWrite(" + dropdown_in['A0'] + ", false);\nanalogWrite(" + dropdown_in['D0'] + ", Math.min(Math.max(" + value_speed + ")), {freq:100});\n";
+    return "digitalWrite(" + dropdown_in.A0 + ", false);\nanalogWrite(" + dropdown_in.D0 + ", Math.min(Math.max(" + value_speed + ")), {freq:100});\n";
   }else if(dropdown_direction == 'reverse'){
-        return "digitalWrite(" + dropdown_in['D0'] + ", false);\nanalogWrite(" + dropdown_in['A0'] + ", Math.min(Math.max(" + value_speed + ")), {freq:100});\n";
-  }else{0
-        return "digitalWrite(" + dropdown_in['A0'] + ", false);\ndigitalWrite(" + dropdown_in['D0'] + ", false);\n";
+        return "digitalWrite(" + dropdown_in.D0 + ", false);\nanalogWrite(" + dropdown_in.A0 + ", Math.min(Math.max(" + value_speed + ")), {freq:100});\n";
+  }else{
+        return "digitalWrite(" + dropdown_in.A0 + ", false);\ndigitalWrite(" + dropdown_in.D0 + ", false);\n";
   }
 };
 
-Blockly.JavaScript['encoder_connect'] = function(block) {
+Blockly.JavaScript.encoder_connect = function(block) {
   var dropdown_in = JSON.parse(block.getFieldValue('IN'));
   var value_holes = Blockly.JavaScript.valueToCode(block, 'HOLES', Blockly.JavaScript.ORDER_ATOMIC);
-  var code = 'require("http://gitlab.fai.utb.cz/jurenat/espruino-modules/raw/master/MyEncoder.js").connect(' + dropdown_in['D1'] + ',' + dropdown_in['D2'] + ', ' + value_holes + ')';
+  var code = 'require("http://gitlab.fai.utb.cz/jurenat/espruino-modules/raw/master/MyEncoder.js").connect(' + dropdown_in.D1 + ',' + dropdown_in.D2 + ', ' + value_holes + ')';
   return [code, Blockly.JavaScript.ORDER_NONE];
 };
 
-Blockly.JavaScript['encoder_reset'] = function(block) {
+Blockly.JavaScript.encoder_reset = function(block) {
   var variable_var = Blockly.JavaScript.variableDB_.getName(block.getFieldValue('VAR'), Blockly.Variables.NAME_TYPE);
   var code = variable_var + '.clearRounds();\n';
   return code;
 };
 
-Blockly.JavaScript['encoder_get'] = function(block) {
+Blockly.JavaScript.encoder_get = function(block) {
   var variable_var = Blockly.JavaScript.variableDB_.getName(block.getFieldValue('VAR'), Blockly.Variables.NAME_TYPE);
   var dropdown_function = block.getFieldValue('FUNCTION');
   var code = variable_var + '.' + dropdown_function + '()';

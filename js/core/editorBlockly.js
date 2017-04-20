@@ -45,10 +45,28 @@
       type : "boolean",
       defaultValue : false, 
     });          
-    
-    // Add the HTML we need
-    $('<iframe id="divblockly" class="blocky" style="display:none;border:none;" src="blockly/blockly.html"></iframe>').appendTo(".editor--code .editor__canvas");
-    
+   
+    Espruino.Core.Config.add("BLOCKLY_LANGUAGE", {
+      section : "General",
+      name : "Graphical Editor Language",
+      description : "The language to use for blocks in the graphical editor (Requires Restart)",
+      type : { "en": "English", "ru":"Russian" },
+      defaultValue : "en",
+    }); 
+    Espruino.Core.Config.add("BLOCKLY_EXTENSIONS", {
+      section : "General",
+      name : "Graphical Editor Extensions",
+      description : "A pipe-separated list of extensions to use. Available are `|bluetooth|` for Puck.js Bluetooth, `|robot|` for the Espruino Pico Robot, and `|motorshield|` for the Amperka Motor shield (Requires Restart)" ,
+      type : "string",
+      defaultValue : "|bluetooth|robot|",
+    }); 
+    // Add the HTML we need        
+    Espruino.addProcessor("initialised", function(data,callback) {
+      var blocklyUrl = "blockly/blockly.html?lang="+Espruino.Config.BLOCKLY_LANGUAGE;
+      blocklyUrl += "&Enable="+encodeURIComponent(Espruino.Config.BLOCKLY_EXTENSIONS);
+      $('<iframe id="divblockly" class="blocky" style="display:none;border:none;" src="'+blocklyUrl+'"></iframe>').appendTo(".editor--code .editor__canvas");
+    });
+
     // Handle the 'sending' processor so we can update the JS if we need to...
     Espruino.addProcessor("sending", function(data, callback) {
       if(Espruino.Config.BLOCKLY_TO_JS && Espruino.Core.Code.isInBlockly())

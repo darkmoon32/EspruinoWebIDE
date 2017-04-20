@@ -4,8 +4,12 @@
     <script type="text/javascript" src="blockly_compressed.js"></script>
     <script type="text/javascript" src="blocks_compressed.js"></script>
     <script type="text/javascript" src="en.js"></script>
+    <script type="text/javascript" src="ru.js"></script>
     <script type="text/javascript" src="javascript_compressed.js"></script>
     <script type="text/javascript" src="blockly_espruino.js"></script>
+    <script type="text/javascript" src="blockly_robot.js"></script>
+    <script type="text/javascript" src="blockly_amperka_motorshield.js"></script>
+    <script type="text/javascript" src="blockly_ble.js"></script>
     <script type="text/javascript" src="field_textarea.js"></script>
     <style>
       html, body {
@@ -32,7 +36,16 @@
       <block type="logic_boolean"></block>
       <block type="logic_ternary"></block>
     </category>
-    <category name="Control">      
+    <category name="Control">
+      <block type="espruino_delay">
+        <value name="SECONDS"><block type="math_number"><title name="NUM">1</title></block></value>
+      </block>
+      <block type="espruino_timeout">
+        <value name="SECONDS"><block type="math_number"><title name="NUM">1</title></block></value>
+      </block>
+      <block type="espruino_interval">
+        <value name="SECONDS"><block type="math_number"><title name="NUM">1</title></block></value>
+      </block>
       <block type="controls_repeat_ext">
         <value name="TIMES">
           <block type="math_number">
@@ -60,7 +73,7 @@
       </block>
       <block type="controls_forEach"></block>
       <block type="controls_flow_statements"></block>
-    </category>    
+    </category>
     <category name="Math">
       <block type="math_number">
         <title name="NUM">0</title>
@@ -253,16 +266,16 @@
           </block>
         </value>
       </block>
-    </category>   
+    </category>
     <category name="Variables">
       <block type="variables_set" inline="false"  >
         <title name="VAR">item</title>
       </block>
       <block type="variables_get"  >
         <title name="VAR">item</title>
-      </block>    
+      </block>
     </category>
-    <!--<category name="Procedures">       
+    <!--<category name="Procedures">
       <block type="procedures_defnoreturn"  >
         <mutation></mutation>
         <title name="NAME">do something</title>
@@ -274,7 +287,7 @@
       <block type="procedures_ifreturn" inline="true"  >
         <mutation value="1"></mutation>
       </block>
-      TODO - need to auto-add calls here?? 
+      TODO - need to auto-add calls here??
     </category> -->
     <category name="Espruino">
       <block type="espruino_timeout">
@@ -318,8 +331,12 @@
       <block type="espruino_analogRead">
         <value name="PIN"><block type="espruino_pin"><title name="PIN">A0</title></block></value>
       </block>
+      <block type="espruino_pinMode">
+        <value name="PIN"><block type="espruino_pin"><title name="PIN">D0</title></block></value>
+      </block>
       <block type="espruino_code">
       </block>
+      <block type="espruino_jsexpression">
     </category>
     <category name="Wifi">
       <block type="esp8266_connect">
@@ -365,6 +382,24 @@
       </block>
       <block type="http_get"></block>
     </category>
+    <category name="Hardware">
+      <block type="hw_servoMove">
+        <value name="PIN"><block type="espruino_pin"><title name="PIN">B13</title></block></value>
+        <value name="VAL"><block type="math_number"><title name="NUM">1</title></block></value>
+      </block>
+      <block type="hw_servoStop">
+        <value name="PIN"><block type="espruino_pin"><title name="PIN">B13</title></block></value>
+      </block>
+      <block type="hw_ultrasonic">
+        <value name="TRIG"><block type="espruino_pin"><title name="PIN">B4</title></block></value>
+        <value name="ECHO"><block type="espruino_pin"><title name="PIN">B3</title></block></value>
+      </block>
+    </category>
+    <category name="Robot" enable_if="robot">
+      <block type="robot_motor"></block>
+      <block type="robot_led"></block>
+      <block type="robot_ldr"></block>
+    </category>
     <category name="LCD">
       <block type="lcd_display_init">
         <value name="RS"><block type="espruino_pin"><title name="PIN">A0</title></block></value>
@@ -373,11 +408,35 @@
         <value name="D5"><block type="espruino_pin"><title name="PIN">C1</title></block></value>
         <value name="D6"><block type="espruino_pin"><title name="PIN">C2</title></block></value>
         <value name="D7"><block type="espruino_pin"><title name="PIN">C3</title></block></value>
-      </block>lcd_display_clear
+      </block>
       <block type="lcd_display_clear"></block>
       <block type="lcd_display_print"></block>
       <block type="lcd_display_set_cursor"></block>
       <block type="lcd_display_create_char"></block>
+    </category>
+    <!-- Amperka's MotorShield -->
+    <category name="MotorShield" enable_if="motorshield">
+      <block type="amperka_motorshield_motor"></block>
+      <block type="amperka_motorshield_motor_dir"></block>
+    </category>
+    <!-- /Amperka's MotorShield -->
+
+    <category name="Bluetooth" enable_if="bluetooth">
+      <block type="ble_connected"></block>
+      <block type="ble_disconnected"></block>
+
+      <block type="ble_dev_name"></block>
+      <block type="ble_dev_prefix"></block>
+      <block type="ble_dev_address"></block>
+
+      <block type="ble_characteristic"></block>
+      <block type="ble_characteristic_dropdown"></block>
+
+      <block type="ble_setchar"></block>
+      <block type="ble_getchar"></block>
+      <block type="ble_write"></block>
+      <block type="ble_onwritten"></block>
+      <block type="ble_value"></block>
     </category>
     <category name="Modules">
       <block type="switch"></block>

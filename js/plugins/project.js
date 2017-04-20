@@ -4,7 +4,7 @@
  This Source Code is subject to the terms of the Mozilla Public
  License, v2.0. If a copy of the MPL was not distributed with this
  file, You can obtain one at http://mozilla.org/MPL/2.0/.
- 
+
  ------------------------------------------------------------------
   Local Project handling Plugin
  ------------------------------------------------------------------
@@ -18,7 +18,7 @@
       sortOrder:500,
       description: "Local directory used for projects, modules, etc. When you select a directory, the 'Projects' and 'Snippets' icons will appear in the main window.",
       tours: { "Project Tour":"project.json", "Snippets Tour":"projectSnippet.json" },
-      getHTML : function(callback) { 
+      getHTML : function(callback) {
         var html =
                 '<div id="projectFolder" style="width:100%;border:1px solid #BBB;margin-bottom:10px;"></div>'+
                 '<button class="projectButton">Select Directory for Sandbox</button>';
@@ -29,10 +29,14 @@
         },10);
       }
     });
- 
+
     Espruino.addProcessor("getModule", function (module, callback) {
       getProjectSubDir("modules",getModules);
-      var t = setTimeout(function(){callback(module);},500);
+      var t = setTimeout(function(){
+        // in case we were unable to find anything
+        t = undefined;
+        callback(module);
+      }, 50);
       function getModules(subDirEntry){
         var fnd = false;
         var dirReader = subDirEntry.createReader();
@@ -44,11 +48,15 @@
               break;
             }
           }
-          if(!fnd){callback(module);}
         });
       }
       function gotModule(data){
+        if (t===undefined) {
+          console.error("Found module, but search took too long.");
+          return;
+        }
         clearTimeout(t);
+        t = undefined;
         module.moduleCode = data;
         callback(module);
       }
@@ -57,6 +65,8 @@
       findBinary(code,callback);
     });
     Espruino.addProcessor("getBinary",function(option,callback){
+      if (option.binary === undefined)
+        return callback(option);
       getProjectSubDir("binary",function(dirEntry){
         checkFileExists(
           dirEntry,
@@ -72,13 +82,13 @@
           },
           function(){
             callback(option);
-          }                    
+          }
         );
       });
     });
     Espruino.addProcessor("getFirmware",function(url,callback){ loadFirmware(url,callback);});
     Espruino.addProcessor("initialised",function(){
-      if(Espruino.Config.projectEntry){ 
+      if(Espruino.Config.projectEntry){
         chrome.fileSystem.isRestorable(Espruino.Config.projectEntry,function(bisRestorable){
           if(!bisRestorable){ Espruino.Config.Notifications.warning("Sandbox not valid anymore");}
           else{ checkEntry(Espruino.Config.projectEntry,function(theEntry){ updateProjectFolder(theEntry);});}
@@ -86,9 +96,9 @@
       }
     });
     setTimeout(function(){
-      getProjectSnippets();          
+      getProjectSnippets();
     },10);
-    showIcon(Espruino.Config.projectEntry); 
+    showIcon(Espruino.Config.projectEntry);
   }
   function findBinary(code,callback){ // find it in E.asmBinary(FunctionName,format,asmFunction);
     var binary = {},binarys = [];
@@ -116,7 +126,7 @@
         tok = lex.next();
       }
     }
-    if(binarys.length === 0){ callback(code);}
+    if(binarys.length === 0){ return callback(code);}
     replaceAllBinaries(code,binarys,callback);
   }
   function replaceAllBinaries(code,binarys,callback){
@@ -143,7 +153,7 @@
           if(i >= binarys.length){ callback(code);}else{replaceBinary(binarys[i]);}
         }
       );
-    }     
+    }
   }
   function int2Hex(u){
     var l = u.toString(16);
@@ -163,7 +173,7 @@
       }
     }
     return r;
-  }      
+  }
   function updateProjectFolder(theEntry){
     var dirReader = theEntry.createReader();
     var entries = [];
@@ -171,16 +181,16 @@
       if(!checkSubFolder(results,"binary")){ theEntry.getDirectory("binary", {create:true}); }
       if(!checkSubFolder(results,"firmware")){ theEntry.getDirectory("firmware", {create:true}); }
       if(!checkSubFolder(results,"modules")){ theEntry.getDirectory("modules", {create: true}); }
-      if(!checkSubFolder(results,"projects")){ theEntry.getDirectory("projects", {create:true}); } 
+      if(!checkSubFolder(results,"projects")){ theEntry.getDirectory("projects", {create:true}); }
       if(!checkSubFolder(results,"snippets")){ theEntry.getDirectory("snippets", {create:true}); saveSnippets(); }
       if(!checkSubFolder(results,"testing")){ theEntry.getDirectory("testing", {create:true}); }
-      if(!checkSubFolder(results,"testinglog")){ theEntry.getDirectory("testinglog", {create: true}); }    });  
+      if(!checkSubFolder(results,"testinglog")){ theEntry.getDirectory("testinglog", {create: true}); }    });
   }
   function setSandboxButton(){
     $(".projectButton").click(function(evt){
       chrome.fileSystem.chooseEntry({type: 'openDirectory'}, function(theEntry) {
         if(theEntry){
-          chrome.fileSystem.getDisplayPath(theEntry,function(path) {            
+          chrome.fileSystem.getDisplayPath(theEntry,function(path) {
             $("#projectEntry").val(chrome.fileSystem.retainEntry(theEntry));
             Espruino.Config.set("projectEntry",chrome.fileSystem.retainEntry(theEntry));
             showLocalFolder(); // update text box + icon
@@ -191,7 +201,7 @@
           Espruino.Config.set("projectEntry",""); // clear project entry
           showLocalFolder(); // update text box + icon
         }
-      }); 
+      });
     });
   }
   function showLocalFolder(){
@@ -203,14 +213,14 @@
       chrome.fileSystem.isRestorable(Espruino.Config.projectEntry, function(bIsRestorable){
         chrome.fileSystem.restoreEntry(Espruino.Config.projectEntry, function(theEntry) {
           if(theEntry){
-            chrome.fileSystem.getDisplayPath(theEntry,function(path) { 
+            chrome.fileSystem.getDisplayPath(theEntry,function(path) {
               $("#projectFolder").text(path);
             });
           }
           else{Espruino.Core.Status.setStatus("Project not found");}
-        }); 
+        });
       });
-    } 
+    }
   }
   function getProjectSnippets(){
     if(Espruino.Config.projectEntry){
@@ -221,7 +231,7 @@
           });
         });
       });
-    }      
+    }
   }
   function getProjectSubDir(name,callback){
     checkEntry(Espruino.Config.projectEntry,getSubTree);
@@ -236,13 +246,16 @@
         }
         console.warn("getProjectSubDir("+name+") failed");
         callback(false);
+      }, function() { // error callback
+        console.warn("getProjectSubDir("+name+") failed");
+        callback(false);
       });
     }
   }
   function checkEntry(entry,callback){
     if(entry){
       chrome.fileSystem.isRestorable(entry, function(bIsRestorable){
-        chrome.fileSystem.restoreEntry(entry, function(theEntry) { 
+        chrome.fileSystem.restoreEntry(entry, function(theEntry) {
           if(theEntry){ callback(theEntry);}
           else{Espruino.Status.setError("Project not found");}
         });
@@ -254,7 +267,7 @@
       if (notExistsCallback)notExistsCallback();
       return;
     }
-      
+
     var dirReader = dirEntry.createReader();
     dirReader.readEntries(function(results){
       var fnd = false;
@@ -286,7 +299,7 @@
         fileWriter.truncate(bb.size);
         setTimeout(function(evt){
           fileWriter.seek(0);
-          fileWriter.write(bb);          
+          fileWriter.write(bb);
         },200);
       });
     });
@@ -303,7 +316,7 @@
           getBinaries(html,function(html){
             getSnippets(html,function(html){
               html += '</div>';
-              callback(html);                
+              callback(html);
             });
           });
         });
@@ -345,7 +358,7 @@
     callback(html);
   }
   function getSnippetTable(){
-    var i,j,html = "";  
+    var i,j,html = "";
     html += '<table width="100%">';
     j = 0;
     for(i in snippets){
@@ -368,7 +381,7 @@
         for(var i = 0; i < results.length;i++){
           if(!results[i].isDirectory){
             name = results[i].name.split(".");
-            if(name.length > 0){
+            if(name.length > 1){
               if(name[1].toUpperCase() === ext){
                 lrow = row.replace("$name0",name[0]);
                 lrow = lrow.replace("$fileentry",chrome.fileSystem.retainEntry(results[i]));
@@ -379,7 +392,7 @@
           }
         }
         lhtml += footer;
-        callback(html + lhtml);        
+        callback(html + lhtml);
       });
     }
   }
@@ -396,9 +409,9 @@
     var fileName = $(this).attr("filename");
     checkEntry($(this).attr("fileentry"),function(theEntry){
       readFilefromEntry(theEntry,function(data){
-        copy2SD("node_modules/" + fileName,data);         
+        copy2SD("node_modules/" + fileName,data);
       });
-    });    
+    });
   }
   function getBinaries(html,callback){
     var header,row,footer;
@@ -406,7 +419,7 @@
     row = '<tr><th>$name0</th>';
     row += '<th title="copy to SD"><button class="copyBinary" fileentry="$fileentry"';
     row += ' filename="$name"></button></th></tr>';
-    footer = '';   
+    footer = '';
     getProjectTable(html,"binary","BIN",header,row,footer,getBinariesImage);
     function getBinariesImage(html){
       var header,row,footer;
@@ -424,7 +437,7 @@
       readBinaryArrayfromEntry(theEntry,function(data){
         var u = new Uint8Array(data);
         copy2SD("node_binaries/" + fileName,u);
-      });  
+      });
     });
   }
   function copyImage(){
@@ -433,8 +446,8 @@
       readBinaryArrayfromEntry(theEntry,function(data){
         var u = new Uint8Array(data);
         copy2SD("images/" + fileName,u);
-      });  
-    });    
+      });
+    });
   }
   function getProjects(html,callback){
     getProjectSubDir("projects",function(subDirEntry){
@@ -450,7 +463,7 @@
               attrFileEntry = 'fileEntry="' + chrome.fileSystem.retainEntry(results[i]) + '"';
               html += '<tr><th>' + name[0] + '</th>';
               if(actualProject){
-                if(actualProject.name === results[i].name){ 
+                if(actualProject.name === results[i].name){
                   html += '<th>&nbsp;</th><th title="save Project"><button class="saveProject"></button>';
                 }
                 else{ html += '<th title="load into Editor"><button class="loadProjects"' + attrFileEntry + '></button>'; }
@@ -519,7 +532,7 @@
             });
           },
           function(){
-            setTimeout(function(){                    
+            setTimeout(function(){
               getProjectSubDir("snippets",function(dirEntry){
                 if (!dirEntry) return;
                 saveFileAs(dirEntry,"terminalsnippets.txt",JSON.stringify(snippets));
@@ -598,7 +611,7 @@
   function loadDataUrl(fileName,callback){
     var adr = fileName.split("/");
     getProjectSubDir(adr[0],getFile);
-    function getFile(subDirEntry){ 
+    function getFile(subDirEntry){
       checkFileExists(subDirEntry,adr[1],fileFound,fileNotFound);
     }
     function fileFound(theEntry){
@@ -667,7 +680,7 @@
           });
           $(".terminalSnippet").click(sendSnippets);
         }
-      });        
+      });
     }
   }
   function appendFile(fileName,data){
@@ -681,17 +694,17 @@
             var bb = new Blob([data],{type:'text/plain'});
             setTimeout(function(evt){
               if(fileWriter.length === 0) fileWriter.seek(0); else fileWriter.seek(fileWriter.length - 1);
-              fileWriter.write(bb);          
+              fileWriter.write(bb);
             },100);
           });
         });
       }
     }
   }
-  
+
   Espruino.Plugins.Project = {
     init : init,
-    
+
     loadModule: loadModule,
     loadFirmware: loadFirmware,
     loadFile: loadFile,

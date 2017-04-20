@@ -14,15 +14,32 @@
 (function(){
   
   function init() {
+    // Try and automatically handle the URL if we're served from somewhere we know
+    if (typeof window!=="undefined" && 
+        window.location &&
+        (window.location.origin=="https://localhost" ||
+         window.location.origin=="https://www.espruino.com")) {
+      setTimeout(function() {
+        handle(window.location.href);
+      }, 200);
+    }
   }
   
   function handleQuery(key, val) {
     Espruino.Core.Code.switchToCode(); // if in blockly
     switch(key){
-      case "code":
+      case "code": // Passing "encodedURIcomponent code" within the URL
         Espruino.Core.EditorJavaScript.setCode(val);
         break;
-      case "upload":
+      case "codeurl": // Passing a URL for code within the URL
+        Espruino.Core.EditorJavaScript.setCode("// Loading from "+val+"...");
+        $.ajax({ url: val, cache: false }).done(function( data ) { 
+          Espruino.Core.EditorJavaScript.setCode(data);
+        }).error(function(){
+          Espruino.Core.EditorJavaScript.setCode("// Error loading "+val);
+        });
+        break;
+      case "upload": // Get "encodedURIcomponent code" from URL and upload it
         Espruino.Core.MenuPortSelector.ensureConnected(function() {
           Espruino.Core.Terminal.focus(); // give the terminal focus
           Espruino.callProcessor("sending");
@@ -30,8 +47,8 @@
           Espruino.Core.EditorJavaScript.setCode(val);
         });        
         break;
-      case "gist":
-        Espruino.Core.EditorJavaScript.setCode("Loading...");
+      case "gist": // Get code from a gist number in the URL
+        Espruino.Core.EditorJavaScript.setCode("// Loading Gist "+val+"...");
         $.getJSON("https://api.github.com/gists/"+ val, function(data){
           if(data && data.files){
             var keys = Object.keys(data.files);
@@ -40,8 +57,11 @@
             }
           }
         }).error(function(){
-          Espruino.Core.EditorJavaScript.setCode("ERROR");
+          Espruino.Core.EditorJavaScript.setCode("// Error loading Gist "+val);
         });
+        break;
+      case "settings":
+        Espruino.Plugins.SettingsProfile.updateFromJson(val);
         break;
     }
   }
@@ -49,7 +69,15 @@
   function handle(url) {    
     console.log("Handling URL "+JSON.stringify(url));
     url = (url);
+    var h = url.indexOf("#");    
     var q = url.indexOf("?");
+    if (h>=0) {
+      var hash = (q>h) ? url.substr(h+1,q) : url.substr(h+1);
+      if (hash.substr(0,7)=="http://" ||
+          hash.substr(0,8)=="https://") {
+        handleQuery("codeurl",hash);
+      }
+    }
     if (q<0) return;
     var query = url.substr(q+1).split("&");
     for (var i in query) {
@@ -60,7 +88,7 @@
         handleQuery(decodeURIComponent(eq[0]),decodeURIComponent(eq[1]));
       else
         console.warn("Didn't understand query section "+JSON.stringify(query[i]));
-    }
+    }    
   }
     
 

@@ -238,15 +238,15 @@ Blockly.Blocks.espruino_LED_pin = {
     var listGen = function() {
       originalPin = this.value_;
       var list = LEDS.slice(start, start+incrementStep);
-      if (start>0) list.unshift(['Back...', 'Back']);
-      if (start+incrementStep<LEDS.length) list.push(['More...', 'More']);        
+      if (start>0) list.unshift([Blockly.Msg.ESPRUINO_BACK+"...", Blockly.Msg.ESPRUINO_BACK]);
+      if (start+incrementStep<LEDS.length) list.push([Blockly.Msg.ESPRUINO_MORE + '...', Blockly.Msg.ESPRUINO_MORE]);
       return list;
     };    
     
     var pinSelector = new Blockly.FieldDropdown(listGen, function(selection){
       
-      if (selection == "More" || selection == "Back") {  
-        if (selection == "More")
+      if (selection == Blockly.Msg.ESPRUINO_MORE || selection == Blockly.Msg.ESPRUINO_BACK) {
+        if (selection == Blockly.Msg.ESPRUINO_MORE)
           start += incrementStep;
         else
           start -= incrementStep;
@@ -275,15 +275,15 @@ Blockly.Blocks.espruino_BTN_pin = {
     var listGen = function() {
       originalPin = this.value_;
       var list = BTNS.slice(start, start+incrementStep);
-      if (start>0) list.unshift(['Back...', 'Back']);
-      if (start+incrementStep<BTNS.length) list.push(['More...', 'More']);        
+      if (start>0) list.unshift([Blockly.Msg.ESPRUINO_BACK+"...", Blockly.Msg.ESPRUINO_BACK]);
+      if (start+incrementStep<BTNS.length) list.push([Blockly.Msg.ESPRUINO_MORE + '...', Blockly.Msg.ESPRUINO_MORE]);
       return list;
     };    
     
     var pinSelector = new Blockly.FieldDropdown(listGen, function(selection){
       
-      if (selection == "More" || selection == "Back") {  
-        if (selection == "More")
+      if (selection == Blockly.Msg.ESPRUINO_MORE || selection == Blockly.Msg.ESPRUINO_BACK) {
+        if (selection == Blockly.Msg.ESPRUINO_MORE)
           start += incrementStep;
         else
           start -= incrementStep;
@@ -312,15 +312,15 @@ Blockly.Blocks.espruino_PWM_pin = {
     var listGen = function() {
       originalPin = this.value_;
       var list = PWMS.slice(start, start+incrementStep);
-      if (start>0) list.unshift(['Back...', 'Back']);
-      if (start+incrementStep<PWMS.length) list.push(['More...', 'More']);        
+      if (start>0) list.unshift([Blockly.Msg.ESPRUINO_BACK+"...", Blockly.Msg.ESPRUINO_BACK]);
+      if (start+incrementStep<PWMS.length) list.push([Blockly.Msg.ESPRUINO_MORE + '...', Blockly.Msg.ESPRUINO_MORE]);
       return list;
     };    
     
     var pinSelector = new Blockly.FieldDropdown(listGen, function(selection){
       
-      if (selection == "More" || selection == "Back") {  
-        if (selection == "More")
+      if (selection == Blockly.Msg.ESPRUINO_MORE || selection == Blockly.Msg.ESPRUINO_BACK) {
+        if (selection == Blockly.Msg.ESPRUINO_MORE)
           start += incrementStep;
         else
           start -= incrementStep;

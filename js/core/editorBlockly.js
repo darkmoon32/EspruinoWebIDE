@@ -50,7 +50,7 @@
       section : "General",
       name : "Graphical Editor Language",
       description : "The language to use for blocks in the graphical editor (Requires Restart)",
-      type : { "en": "English", "ru":"Russian" },
+      type : { "en": "English", "ru":"Russian", "cz":"Czech" },
       defaultValue : "en",
     }); 
     Espruino.Core.Config.add("BLOCKLY_EXTENSIONS", {
@@ -58,7 +58,7 @@
       name : "Graphical Editor Extensions",
       description : "A pipe-separated list of extensions to use. Available are `|bluetooth|` for Puck.js Bluetooth, `|robot|` for the Espruino Pico Robot, and `|motorshield|` for the Amperka Motor shield (Requires Restart)" ,
       type : "string",
-      defaultValue : "|bluetooth|robot|",
+      defaultValue : "",//|bluetooth|robot|
     }); 
     // Add the HTML we need        
     Espruino.addProcessor("initialised", function(data,callback) {

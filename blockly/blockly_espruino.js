@@ -1726,7 +1726,7 @@ Blockly.JavaScript.read_objects_property_ = function(block) {
 Blockly.JavaScript.servo_move = function(block) {
   var value_pin = Blockly.JavaScript.valueToCode(block, 'PIN', Blockly.JavaScript.ORDER_ATOMIC);
   var value_pos = Blockly.JavaScript.valueToCode(block, 'POS', Blockly.JavaScript.ORDER_ATOMIC);
-  var code = 'analogWrite(' + value_pin + ', (1 + Math.min(Math.max(' + value_pos + ', 0), 1)) / 20,{freq : 50});\n';
+  var code = 'analogWrite(' + value_pin + ', (0.8 + 1.4 * Math.min(Math.max(' + value_pos + ', 0), 1)) / 20,{freq : 50});\n';
   return code;
 };
 

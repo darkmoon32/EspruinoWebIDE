@@ -8,6 +8,7 @@
   <meta name=apple-mobile-web-app-status-bar-style content="black">
 
   <link rel="icon" href="favicon.ico">
+  <link rel="manifest" href="webapp_manifest.json">
 
   <link rel="stylesheet" href="css/ui-lightness/jquery-ui-1.10.1.custom.css">
   <link rel="stylesheet" href="css/libs/jquery.treeview.css"></link>
@@ -121,17 +122,16 @@
   <script src="EspruinoTools/plugins/compiler.js"></script>
   <script src="EspruinoTools/plugins/assembler.js"></script>
   <script src="EspruinoTools/plugins/getGitHub.js"></script>
-  <script src="EspruinoTools/libs/targz.js"></script> <!-- needed for npmMpdules -->
-  <script src="EspruinoTools/plugins/npmModules.js"></script>
   <script src="EspruinoTools/plugins/setTime.js"></script>
   <script src="EspruinoTools/libs/utf8.js"></script> <!-- needed for unicode -->
   <script src="EspruinoTools/plugins/unicode.js"></script>
-  <script src="EspruinoTools/plugins/saveOnSend.js"></script>
 
   <script src="EspruinoTools/libs/esprima/esprima.js"></script> <!-- needed for minify -->
   <script src="EspruinoTools/libs/esprima/esmangle.js"></script> <!-- needed for minify -->
   <script src="EspruinoTools/libs/esprima/escodegen.js"></script> <!-- needed for minify -->
   <script src="EspruinoTools/plugins/minify.js"></script>
+
+  <script src="EspruinoTools/plugins/saveOnSend.js"></script> <!-- This should come after minify -->
 
   <script src="js/plugins/tutorial.js"></script>
   <script src="js/plugins/webcam.js"></script>
@@ -150,24 +150,6 @@
   <script src="js/plugins/arrows.js"></script>
   <script src="js/plugins/offline.js"></script>
   <!-- <script src="js/plugins/_examplePlugin.js"></script> -->
-
-
-  <script>
-  // register service worker
-  if (false) {//'serviceWorker' in navigator) {
-    navigator.serviceWorker.register('serviceworker.js', { /*scope: '/'*/ }).then(function(reg) {
-      if(reg.installing) {
-        console.log('Service worker installing');
-      } else if(reg.waiting) {
-        console.log('Service worker installed');
-      } else if(reg.active) {
-        console.log('Service worker active');
-      }
-    }).catch(function(error) {
-      console.log('Service worker registration failed with ' + error);
-    });
-  };
-  </script>
 
   <title>Espruino Web IDE</title>
 </head>
@@ -240,7 +222,24 @@
   })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
   ga('create', 'UA-46537227-2', 'auto');
   ga('send', 'pageview');
-</script>
 
+  // register service worker on known origins
+  if (window.location.origin == "https://www.espruino.com" ||
+      window.location.origin == "https://espruino.github.io") {
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('serviceworker.js').then(function(reg) {
+        if(reg.installing) {
+          console.log('Service worker installing');
+        } else if(reg.waiting) {
+          console.log('Service worker installed');
+        } else if(reg.active) {
+          console.log('Service worker active');
+        }
+      }).catch(function(error) {
+        console.log('Service worker registration failed with ' + error);
+      });
+    }
+  }
+</script>
 </body>
 </html>

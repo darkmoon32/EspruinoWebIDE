@@ -1193,6 +1193,9 @@ Blockly.Blocks.lcd_display_init = {
     this.appendValueInput("RS")
         .setCheck(null)
         .appendField(Blockly.Msg.LCD_INIT_RS);
+    this.appendValueInput("RW")
+        .setCheck(null)
+        .appendField(Blockly.Msg.LCD_INIT_RW);
     this.appendValueInput("E")
         .setCheck(null)
         .appendField(Blockly.Msg.LCD_INIT_E);
@@ -1213,6 +1216,21 @@ Blockly.Blocks.lcd_display_init = {
     this.setTooltip(Blockly.Msg.LCD_INIT_TOOLTIP);
     this.setHelpUrl(Blockly.Msg.LCD_INIT_HELPURL);
     this.setColour(ESPRUINO_COL);
+  }
+};
+
+Blockly.Blocks['lcd_display_write'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField(Blockly.Msg.LCD_WRITE_ITEM)
+        .appendField(new Blockly.FieldVariable("item"), "LCD");
+    this.appendValueInput("CMD")
+        .setCheck("Number")
+        .appendField(Blockly.Msg.LCD_WRITE_VALUE);
+    this.setInputsInline(true);
+    this.setColour(ESPRUINO_COL);
+ this.setTooltip(Blockly.Msg.LCD_WRITE_TOOLTIP);
+ this.setHelpUrl(Blockly.Msg.LCD_WRITE_HELPURL);
   }
 };
 
@@ -1628,7 +1646,7 @@ Blockly.JavaScript.lcd_display_create_char = function(block) {
   var variable_disp = Blockly.JavaScript.variableDB_.getName(block.getFieldValue('DISP'), Blockly.Variables.NAME_TYPE);
   var value_char = Blockly.JavaScript.valueToCode(block, 'CHAR', Blockly.JavaScript.ORDER_ATOMIC);
   var value_data = Blockly.JavaScript.valueToCode(block, 'DATA', Blockly.JavaScript.ORDER_ATOMIC);
-  var code = variable_disp + '.createChar(' + value_char + ', ' + value_dat + ');\n';
+  var code = variable_disp + '.createChar(' + value_char + ', ' + value_data + ');\n';
   return code;
 };
 
@@ -1654,14 +1672,22 @@ Blockly.JavaScript.lcd_display_clear = function(block) {
 };
 
 Blockly.JavaScript.lcd_display_init = function(block) {
+  var value_rw = Blockly.JavaScript.valueToCode(block, 'RW', Blockly.JavaScript.ORDER_ATOMIC);
   var value_rs = Blockly.JavaScript.valueToCode(block, 'RS', Blockly.JavaScript.ORDER_ATOMIC);
   var value_e = Blockly.JavaScript.valueToCode(block, 'E', Blockly.JavaScript.ORDER_ATOMIC);
   var value_d4 = Blockly.JavaScript.valueToCode(block, 'D4', Blockly.JavaScript.ORDER_ATOMIC);
   var value_d5 = Blockly.JavaScript.valueToCode(block, 'D5', Blockly.JavaScript.ORDER_ATOMIC);
   var value_d6 = Blockly.JavaScript.valueToCode(block, 'D6', Blockly.JavaScript.ORDER_ATOMIC);
   var value_d7 = Blockly.JavaScript.valueToCode(block, 'D7', Blockly.JavaScript.ORDER_ATOMIC);
-  var code = 'require("HD44780").connect(' + value_rs + ',' + value_e + ',' + value_d4 + ',' + value_d5 + ',' + value_d6 + ',' + value_d7 + ')';
+  var code = 'digitalWrite(' + value_rw + ',0);\nrequire("HD44780").connect(' + value_rs + ',' + value_e + ',' + value_d4 + ',' + value_d5 + ',' + value_d6 + ',' + value_d7 + ')';
   return [code, Blockly.JavaScript.ORDER_NONE];
+};
+
+Blockly.JavaScript['lcd_display_write'] = function(block) {
+  var variable_lcd = Blockly.JavaScript.variableDB_.getName(block.getFieldValue('LCD'), Blockly.Variables.NAME_TYPE);
+  var value_cmd = Blockly.JavaScript.valueToCode(block, 'CMD', Blockly.JavaScript.ORDER_ATOMIC);
+  var code = variable_lcd + '.write(' + value_cmd + ');\n';
+  return code;
 };
 
 Blockly.JavaScript.text_fromcharcode = function(block) {

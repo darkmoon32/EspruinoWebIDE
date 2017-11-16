@@ -404,12 +404,14 @@
     <category name="LCD">
       <block type="lcd_display_init">
         <value name="RS"><block type="espruino_pin"><title name="PIN">A0</title></block></value>
+        <value name="RW"><block type="espruino_pin"><title name="PIN">A2</title></block></value>
         <value name="E"><block type="espruino_pin"><title name="PIN">A1</title></block></value>
         <value name="D4"><block type="espruino_pin"><title name="PIN">C0</title></block></value>
         <value name="D5"><block type="espruino_pin"><title name="PIN">C1</title></block></value>
         <value name="D6"><block type="espruino_pin"><title name="PIN">C2</title></block></value>
         <value name="D7"><block type="espruino_pin"><title name="PIN">C3</title></block></value>
       </block>
+      <block type="lcd_display_write"><value name="CMD"><block type="math_number"><title name="NUM">0</title></block></value></block>
       <block type="lcd_display_clear"></block>
       <block type="lcd_display_print"></block>
       <block type="lcd_display_set_cursor"></block>

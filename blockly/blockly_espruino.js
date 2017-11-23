@@ -1272,12 +1272,12 @@ Blockly.Blocks.lcd_display_set_cursor = {
     this.appendDummyInput()
         .appendField(Blockly.Msg.LCD_SET_CURSOR_DISP)
         .appendField(new Blockly.FieldVariable("item"), "DISP");
-    this.appendDummyInput()
-        .appendField(Blockly.Msg.LCD_SET_CURSOR_X)
-        .appendField(new Blockly.FieldDropdown([["1", "1"], ["2", "2"], ["3", "3"], ["4", "4"], ["5", "5"], ["6", "6"], ["7", "7"], ["8", "8"], ["9", "9"], ["10", "10"], ["11", "11"], ["12", "12"], ["13", "13"], ["14", "14"], ["15", "15"], ["16", "16"]]), "X");
-    this.appendDummyInput()
-        .appendField(Blockly.Msg.LCD_SET_CURSOR_Y)
-        .appendField(new Blockly.FieldDropdown([["1", "1"], ["2", "2"]]), "Y");
+    this.appendValueInput("X")
+        .setCheck(null)
+        .appendField(Blockly.Msg.LCD_SET_CURSOR_X);
+    this.appendValueInput("Y")
+        .setCheck(null)
+        .appendField(Blockly.Msg.LCD_SET_CURSOR_Y);
     this.setInputsInline(true);
     this.setPreviousStatement(true);
     this.setNextStatement(true);
@@ -1654,9 +1654,9 @@ Blockly.JavaScript.lcd_display_create_char = function(block) {
 
 Blockly.JavaScript.lcd_display_set_cursor = function(block) {
   var variable_disp = Blockly.JavaScript.variableDB_.getName(block.getFieldValue('DISP'), Blockly.Variables.NAME_TYPE);
-  var dropdown_x = block.getFieldValue('X');
-  var dropdown_y = block.getFieldValue('Y');
-  var code = variable_disp + '.setCursor(' + (dropdown_x - 1) + ', ' + (dropdown_y - 1) + ');\n';
+  var value_x = Blockly.JavaScript.valueToCode(block, 'X', Blockly.JavaScript.ORDER_ATOMIC);
+  var value_y = Blockly.JavaScript.valueToCode(block, 'Y', Blockly.JavaScript.ORDER_ATOMIC);
+  var code = variable_disp + '.setCursor(' + (value_x - 1) + ', ' + (value_y - 1) + ');\n';
   return code;
 };
 

@@ -1229,6 +1229,8 @@ Blockly.Blocks['lcd_display_write'] = {
         .appendField(Blockly.Msg.LCD_WRITE_VALUE);
     this.setInputsInline(true);
     this.setColour(ESPRUINO_COL);
+ this.setPreviousStatement(true);
+ this.setNextStatement(true);
  this.setTooltip(Blockly.Msg.LCD_WRITE_TOOLTIP);
  this.setHelpUrl(Blockly.Msg.LCD_WRITE_HELPURL);
   }

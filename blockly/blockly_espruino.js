@@ -1679,7 +1679,7 @@ Blockly.JavaScript.lcd_display_init = function(block) {
   var value_d5 = Blockly.JavaScript.valueToCode(block, 'D5', Blockly.JavaScript.ORDER_ATOMIC);
   var value_d6 = Blockly.JavaScript.valueToCode(block, 'D6', Blockly.JavaScript.ORDER_ATOMIC);
   var value_d7 = Blockly.JavaScript.valueToCode(block, 'D7', Blockly.JavaScript.ORDER_ATOMIC);
-  var code = 'digitalWrite(' + value_rw + ',0);\nrequire("HD44780").connect(' + value_rs + ',' + value_e + ',' + value_d4 + ',' + value_d5 + ',' + value_d6 + ',' + value_d7 + ')';
+  var code = 'require("https://gitlab.fai.utb.cz/jurenat/HD44780/raw/master/HD44780js").connect(' + value_rs + ',' + value_rw + ',' + value_e + ',' + value_d4 + ',' + value_d5 + ',' + value_d6 + ',' + value_d7 + ')';
   return [code, Blockly.JavaScript.ORDER_NONE];
 };
 

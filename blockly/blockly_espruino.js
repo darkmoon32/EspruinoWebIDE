@@ -1461,10 +1461,30 @@ Blockly.Blocks.servo_move = {
   }
 };
 
+/* three diodes line sensor with analog output*/
+Blockly.Blocks['line_sensor_3_diodes_a'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField("Analog line sensor 3 diodes. Input port: ")
+        .appendField(new Blockly.FieldDropdown(INS), "PORT");
+    this.setInputsInline(true);
+    this.setOutput(true, null);
+    this.setColour(ESPRUINO_COL);
+ this.setTooltip("");
+ this.setHelpUrl("");
+  }
+};
+
 // -----------------------------------------------------------------------------------
 // -----------------------------------------------------------------------------------
 // -----------------------------------------------------------------------------------
 // -----------------------------------------------------------------------------------
+
+Blockly.JavaScript['line_sensor_3_diodes_a'] = function(block) {
+  var dropdown_port = JSON.parse(block.getFieldValue('PORT'));
+  var code = 'analogRead(' + dropdown_port.A0 + ')';
+  return [code, Blockly.JavaScript.ORDER_NONE];
+};
 
 Blockly.JavaScript.text_print = function() {
   var argument0 = Blockly.JavaScript.valueToCode(this, 'TEXT',

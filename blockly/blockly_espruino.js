@@ -1465,7 +1465,20 @@ Blockly.Blocks.servo_move = {
 Blockly.Blocks['line_sensor_3_diodes_a'] = {
   init: function() {
     this.appendDummyInput()
-        .appendField("Analog line sensor 3 diodes. Input port: ")
+        .appendField("Analog line-sensor 3 diodes. Input port: ")
+        .appendField(new Blockly.FieldDropdown(INS), "PORT");
+    this.setInputsInline(true);
+    this.setOutput(true, null);
+    this.setColour(ESPRUINO_COL);
+ this.setTooltip("");
+ this.setHelpUrl("");
+  }
+};
+
+Blockly.Blocks['line_sensor_3_diodes_d'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField("Digital line-sensor 3 diodes. Input port: ")
         .appendField(new Blockly.FieldDropdown(INS), "PORT");
     this.setInputsInline(true);
     this.setOutput(true, null);
@@ -1479,6 +1492,12 @@ Blockly.Blocks['line_sensor_3_diodes_a'] = {
 // -----------------------------------------------------------------------------------
 // -----------------------------------------------------------------------------------
 // -----------------------------------------------------------------------------------
+
+Blockly.JavaScript['line_sensor_3_diodes_d'] = function(block) {
+  var dropdown_port = JSON.parse(block.getFieldValue('PORT'));
+  var code = 'digitalRead([' + dropdown_port.D0 + ', ' + dropdown_port.D1 + ', ' + dropdown_port.D2 + '])';
+  return [code, Blockly.JavaScript.ORDER_NONE];
+};
 
 Blockly.JavaScript['line_sensor_3_diodes_a'] = function(block) {
   var dropdown_port = JSON.parse(block.getFieldValue('PORT'));

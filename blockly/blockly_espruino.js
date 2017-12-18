@@ -1273,10 +1273,8 @@ Blockly.Blocks.lcd_display_set_cursor = {
         .appendField(Blockly.Msg.LCD_SET_CURSOR_DISP)
         .appendField(new Blockly.FieldVariable("item"), "DISP");
     this.appendValueInput("X")
-        .setCheck(null)
         .appendField(Blockly.Msg.LCD_SET_CURSOR_X);
     this.appendValueInput("Y")
-        .setCheck(null)
         .appendField(Blockly.Msg.LCD_SET_CURSOR_Y);
     this.setInputsInline(true);
     this.setPreviousStatement(true);
@@ -1656,7 +1654,7 @@ Blockly.JavaScript.lcd_display_set_cursor = function(block) {
   var variable_disp = Blockly.JavaScript.variableDB_.getName(block.getFieldValue('DISP'), Blockly.Variables.NAME_TYPE);
   var value_x = Blockly.JavaScript.valueToCode(block, 'X', Blockly.JavaScript.ORDER_ATOMIC);
   var value_y = Blockly.JavaScript.valueToCode(block, 'Y', Blockly.JavaScript.ORDER_ATOMIC);
-  var code = variable_disp + '.setCursor(' + (value_x - 1) + ', ' + (value_y - 1) + ');\n';
+  var code = variable_disp + '.setCursor(' + (value_x) + ' - 1, ' + (value_y) + ' - 1);\n';
   return code;
 };
 

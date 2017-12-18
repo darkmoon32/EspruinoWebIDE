@@ -1465,26 +1465,24 @@ Blockly.Blocks.servo_move = {
 Blockly.Blocks['line_sensor_3_diodes_a'] = {
   init: function() {
     this.appendDummyInput()
-        .appendField("Analog line-sensor 3 diodes. Input port: ")
+        .appendField(Blockly.Msg.LINE_SENSOR_3DIODES_A_PORT)
         .appendField(new Blockly.FieldDropdown(INS), "PORT");
     this.setInputsInline(true);
     this.setOutput(true, null);
     this.setColour(ESPRUINO_COL);
- this.setTooltip("");
- this.setHelpUrl("");
+ this.setTooltip(Blockly.Msg.LINE_SENSOR_3DIODES_A_TOOLTIP);
   }
 };
 
 Blockly.Blocks['line_sensor_3_diodes_d'] = {
   init: function() {
     this.appendDummyInput()
-        .appendField("Digital line-sensor 3 diodes. Input port: ")
+        .appendField(Blockly.Msg.LINE_SENSOR_3DIODES_D_PORT)
         .appendField(new Blockly.FieldDropdown(INS), "PORT");
     this.setInputsInline(true);
     this.setOutput(true, null);
     this.setColour(ESPRUINO_COL);
- this.setTooltip("");
- this.setHelpUrl("");
+ this.setTooltip(Blockly.Msg.LINE_SENSOR_3DIODES_D_TOOLTIP);
   }
 };
 

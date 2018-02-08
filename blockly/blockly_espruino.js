@@ -1193,6 +1193,9 @@ Blockly.Blocks.lcd_display_init = {
     this.appendValueInput("RS")
         .setCheck(null)
         .appendField(Blockly.Msg.LCD_INIT_RS);
+    this.appendValueInput("RW")
+        .setCheck(null)
+        .appendField(Blockly.Msg.LCD_INIT_RW);
     this.appendValueInput("E")
         .setCheck(null)
         .appendField(Blockly.Msg.LCD_INIT_E);
@@ -1213,6 +1216,23 @@ Blockly.Blocks.lcd_display_init = {
     this.setTooltip(Blockly.Msg.LCD_INIT_TOOLTIP);
     this.setHelpUrl(Blockly.Msg.LCD_INIT_HELPURL);
     this.setColour(ESPRUINO_COL);
+  }
+};
+
+Blockly.Blocks['lcd_display_write'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField(Blockly.Msg.LCD_WRITE_ITEM)
+        .appendField(new Blockly.FieldVariable("item"), "LCD");
+    this.appendValueInput("CMD")
+        .setCheck("Number")
+        .appendField(Blockly.Msg.LCD_WRITE_VALUE);
+    this.setInputsInline(true);
+    this.setColour(ESPRUINO_COL);
+ this.setPreviousStatement(true);
+ this.setNextStatement(true);
+ this.setTooltip(Blockly.Msg.LCD_WRITE_TOOLTIP);
+ this.setHelpUrl(Blockly.Msg.LCD_WRITE_HELPURL);
   }
 };
 
@@ -1252,12 +1272,10 @@ Blockly.Blocks.lcd_display_set_cursor = {
     this.appendDummyInput()
         .appendField(Blockly.Msg.LCD_SET_CURSOR_DISP)
         .appendField(new Blockly.FieldVariable("item"), "DISP");
-    this.appendDummyInput()
-        .appendField(Blockly.Msg.LCD_SET_CURSOR_X)
-        .appendField(new Blockly.FieldDropdown([["1", "1"], ["2", "2"], ["3", "3"], ["4", "4"], ["5", "5"], ["6", "6"], ["7", "7"], ["8", "8"], ["9", "9"], ["10", "10"], ["11", "11"], ["12", "12"], ["13", "13"], ["14", "14"], ["15", "15"], ["16", "16"]]), "X");
-    this.appendDummyInput()
-        .appendField(Blockly.Msg.LCD_SET_CURSOR_Y)
-        .appendField(new Blockly.FieldDropdown([["1", "1"], ["2", "2"]]), "Y");
+    this.appendValueInput("X")
+        .appendField(Blockly.Msg.LCD_SET_CURSOR_X);
+    this.appendValueInput("Y")
+        .appendField(Blockly.Msg.LCD_SET_CURSOR_Y);
     this.setInputsInline(true);
     this.setPreviousStatement(true);
     this.setNextStatement(true);
@@ -1443,10 +1461,47 @@ Blockly.Blocks.servo_move = {
   }
 };
 
+/* three diodes line sensor with analog output*/
+Blockly.Blocks['line_sensor_3_diodes_a'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField(Blockly.Msg.LINE_SENSOR_3DIODES_A_PORT)
+        .appendField(new Blockly.FieldDropdown(INS), "PORT");
+    this.setInputsInline(true);
+    this.setOutput(true, null);
+    this.setColour(ESPRUINO_COL);
+ this.setTooltip(Blockly.Msg.LINE_SENSOR_3DIODES_A_TOOLTIP);
+  }
+};
+
+Blockly.Blocks['line_sensor_3_diodes_d'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField(Blockly.Msg.LINE_SENSOR_3DIODES_D_PORT)
+        .appendField(new Blockly.FieldDropdown(INS), "PORT");
+    this.setInputsInline(true);
+    this.setOutput(true, null);
+    this.setColour(ESPRUINO_COL);
+ this.setTooltip(Blockly.Msg.LINE_SENSOR_3DIODES_D_TOOLTIP);
+  }
+};
+
 // -----------------------------------------------------------------------------------
 // -----------------------------------------------------------------------------------
 // -----------------------------------------------------------------------------------
 // -----------------------------------------------------------------------------------
+
+Blockly.JavaScript['line_sensor_3_diodes_d'] = function(block) {
+  var dropdown_port = JSON.parse(block.getFieldValue('PORT'));
+  var code = 'digitalRead([' + dropdown_port.D0 + ', ' + dropdown_port.D1 + ', ' + dropdown_port.D2 + '])';
+  return [code, Blockly.JavaScript.ORDER_NONE];
+};
+
+Blockly.JavaScript['line_sensor_3_diodes_a'] = function(block) {
+  var dropdown_port = JSON.parse(block.getFieldValue('PORT'));
+  var code = 'analogRead(' + dropdown_port.A0 + ')';
+  return [code, Blockly.JavaScript.ORDER_NONE];
+};
 
 Blockly.JavaScript.text_print = function() {
   var argument0 = Blockly.JavaScript.valueToCode(this, 'TEXT',
@@ -1628,15 +1683,15 @@ Blockly.JavaScript.lcd_display_create_char = function(block) {
   var variable_disp = Blockly.JavaScript.variableDB_.getName(block.getFieldValue('DISP'), Blockly.Variables.NAME_TYPE);
   var value_char = Blockly.JavaScript.valueToCode(block, 'CHAR', Blockly.JavaScript.ORDER_ATOMIC);
   var value_data = Blockly.JavaScript.valueToCode(block, 'DATA', Blockly.JavaScript.ORDER_ATOMIC);
-  var code = variable_disp + '.createChar(' + value_char + ', ' + value_dat + ');\n';
+  var code = variable_disp + '.createChar(' + value_char + ', ' + value_data + ');\n';
   return code;
 };
 
 Blockly.JavaScript.lcd_display_set_cursor = function(block) {
   var variable_disp = Blockly.JavaScript.variableDB_.getName(block.getFieldValue('DISP'), Blockly.Variables.NAME_TYPE);
-  var dropdown_x = block.getFieldValue('X');
-  var dropdown_y = block.getFieldValue('Y');
-  var code = variable_disp + '.setCursor(' + (dropdown_x - 1) + ', ' + (dropdown_y - 1) + ');\n';
+  var value_x = Blockly.JavaScript.valueToCode(block, 'X', Blockly.JavaScript.ORDER_ATOMIC);
+  var value_y = Blockly.JavaScript.valueToCode(block, 'Y', Blockly.JavaScript.ORDER_ATOMIC);
+  var code = variable_disp + '.setCursor(' + (value_x) + ' - 1, ' + (value_y) + ' - 1);\n';
   return code;
 };
 
@@ -1654,14 +1709,22 @@ Blockly.JavaScript.lcd_display_clear = function(block) {
 };
 
 Blockly.JavaScript.lcd_display_init = function(block) {
+  var value_rw = Blockly.JavaScript.valueToCode(block, 'RW', Blockly.JavaScript.ORDER_ATOMIC);
   var value_rs = Blockly.JavaScript.valueToCode(block, 'RS', Blockly.JavaScript.ORDER_ATOMIC);
   var value_e = Blockly.JavaScript.valueToCode(block, 'E', Blockly.JavaScript.ORDER_ATOMIC);
   var value_d4 = Blockly.JavaScript.valueToCode(block, 'D4', Blockly.JavaScript.ORDER_ATOMIC);
   var value_d5 = Blockly.JavaScript.valueToCode(block, 'D5', Blockly.JavaScript.ORDER_ATOMIC);
   var value_d6 = Blockly.JavaScript.valueToCode(block, 'D6', Blockly.JavaScript.ORDER_ATOMIC);
   var value_d7 = Blockly.JavaScript.valueToCode(block, 'D7', Blockly.JavaScript.ORDER_ATOMIC);
-  var code = 'require("HD44780").connect(' + value_rs + ',' + value_e + ',' + value_d4 + ',' + value_d5 + ',' + value_d6 + ',' + value_d7 + ')';
+  var code = 'require("https://gitlab.fai.utb.cz/jurenat/HD44780/raw/master/HD44780.js").connect(' + value_rs + ',' + value_rw + ',' + value_e + ',' + value_d4 + ',' + value_d5 + ',' + value_d6 + ',' + value_d7 + ')';
   return [code, Blockly.JavaScript.ORDER_NONE];
+};
+
+Blockly.JavaScript['lcd_display_write'] = function(block) {
+  var variable_lcd = Blockly.JavaScript.variableDB_.getName(block.getFieldValue('LCD'), Blockly.Variables.NAME_TYPE);
+  var value_cmd = Blockly.JavaScript.valueToCode(block, 'CMD', Blockly.JavaScript.ORDER_ATOMIC);
+  var code = variable_lcd + '.write(' + value_cmd + ');\n';
+  return code;
 };
 
 Blockly.JavaScript.text_fromcharcode = function(block) {

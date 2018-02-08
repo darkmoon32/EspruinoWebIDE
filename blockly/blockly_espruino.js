@@ -1465,7 +1465,7 @@ Blockly.JavaScript.espruino_timeout = function() {
   return ["setTimeout(function() {\n"+branch+" }, "+seconds+"*1000.0)",Blockly.JavaScript.ORDER_ATOMIC];
 };
 Blockly.JavaScript.espruino_clear_timeout = function() {
-  var timeout = Blockly.JavaScript.valueToCode(this, 'TIMEOUT', Blockly.JavaScript.ORDER_ATOMIC) || '0';
+  var timeout = Blockly.JavaScript.valueToCode(this, 'TIMEOUT', Blockly.JavaScript.ORDER_ATOMIC);
   return "clearTimeout("+timeout+");\n";
 };
 Blockly.JavaScript.espruino_getTime = function() {
@@ -1478,7 +1478,7 @@ Blockly.JavaScript.espruino_interval = function() {
   return ["setInterval(function() {\n"+branch+" }, "+seconds+"*1000.0)",Blockly.JavaScript.ORDER_ATOMIC];
 };
 Blockly.JavaScript.espruino_clear_interval = function() {
-  var intr = Blockly.JavaScript.valueToCode(this, 'INTERVAL', Blockly.JavaScript.ORDER_ATOMIC) || '0';
+  var intr = Blockly.JavaScript.valueToCode(this, 'INTERVAL', Blockly.JavaScript.ORDER_ATOMIC);
   return "clearInterval("+intr+");\n";
 };
 Blockly.JavaScript.espruino_change_interval = function() {

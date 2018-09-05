@@ -1716,7 +1716,7 @@ Blockly.JavaScript.lcd_display_init = function(block) {
   var value_d5 = Blockly.JavaScript.valueToCode(block, 'D5', Blockly.JavaScript.ORDER_ATOMIC);
   var value_d6 = Blockly.JavaScript.valueToCode(block, 'D6', Blockly.JavaScript.ORDER_ATOMIC);
   var value_d7 = Blockly.JavaScript.valueToCode(block, 'D7', Blockly.JavaScript.ORDER_ATOMIC);
-  var code = 'require("https://gitlab.fai.utb.cz/jurenat/HD44780/raw/master/HD44780.js").connect(' + value_rs + ',' + value_rw + ',' + value_e + ',' + value_d4 + ',' + value_d5 + ',' + value_d6 + ',' + value_d7 + ')';
+  var code = 'require("https://raw.githubusercontent.com/darkmoon32/espruino-modules/master/HD44780.js").connect(' + value_rs + ',' + value_rw + ',' + value_e + ',' + value_d4 + ',' + value_d5 + ',' + value_d6 + ',' + value_d7 + ')';
   return [code, Blockly.JavaScript.ORDER_NONE];
 };
 
@@ -2003,7 +2003,7 @@ Blockly.JavaScript.motor_driver = function(block) {
 Blockly.JavaScript.encoder_connect = function(block) {
   var dropdown_in = JSON.parse(block.getFieldValue('IN'));
   var value_holes = Blockly.JavaScript.valueToCode(block, 'HOLES', Blockly.JavaScript.ORDER_ATOMIC);
-  var code = 'require("http://gitlab.fai.utb.cz/jurenat/espruino-modules/raw/master/MyEncoder.js").connect(' + dropdown_in.D1 + ',' + dropdown_in.D2 + ', ' + value_holes + ')';
+  var code = 'require("https://raw.githubusercontent.com/darkmoon32/espruino-modules/master/MyEncoder.js").connect(' + dropdown_in.D1 + ',' + dropdown_in.D2 + ', ' + value_holes + ')';
   return [code, Blockly.JavaScript.ORDER_NONE];
 };
 

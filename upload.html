@@ -31,7 +31,7 @@
   <script>
     // Force HTTPS - needed for web bluetooth
     var l = window.location.toString();
-    if (l.substr(0,7)=="http://")
+    if (l.substr(0,7)=="http://" && !window.location.port)
       window.location = "https://"+l.substr(7);
   </script>
 
@@ -109,10 +109,10 @@
   <script src="EspruinoTools/plugins/getGitHub.js"></script>
   <script src="EspruinoTools/libs/targz.js"></script> <!-- needed for npmMpdules -->
   <script src="EspruinoTools/plugins/npmModules.js"></script>
-  <script src="EspruinoTools/plugins/setTime.js"></script>
   <script src="EspruinoTools/libs/utf8.js"></script> <!-- needed for unicode -->
   <script src="EspruinoTools/plugins/unicode.js"></script>
   <script src="EspruinoTools/plugins/saveOnSend.js"></script>
+  <script src="EspruinoTools/plugins/setTime.js"></script> <!-- This should come after save on send -->
 
   <script src="EspruinoTools/libs/esprima/esprima.js"></script> <!-- needed for minify -->
   <script src="EspruinoTools/libs/esprima/esmangle.js"></script> <!-- needed for minify -->
@@ -126,28 +126,10 @@
 
   <!-- <script src="js/plugins/_examplePlugin.js"></script> -->
 
-
-  <script>
-  // register service worker
-  if (false) {//'serviceWorker' in navigator) {
-    navigator.serviceWorker.register('serviceworker.js', { /*scope: '/'*/ }).then(function(reg) {
-      if(reg.installing) {
-        console.log('Service worker installing');
-      } else if(reg.waiting) {
-        console.log('Service worker installed');
-      } else if(reg.active) {
-        console.log('Service worker active');
-      }
-    }).catch(function(error) {
-      console.log('Service worker registration failed with ' + error);
-    });
-  };
-  </script>
-
   <title>Espruino Uploader</title>
 </head>
 <body>
-  <div class="window window--app" style="padding-top: 0px;">
+  <div class="window">
 
     <!-- Viewport -->
     <div class="window__viewport">
@@ -161,7 +143,7 @@
                 <div class="v-split__bottom sidebar__buttons sidebar__buttons--bottom"></div>
               </div>
             </div>
-            <div class="canvas editor__canvas"></div>
+            <div class="canvas editor__canvas editor__canvas__terminal"></div>
           </div>
 
       </div>

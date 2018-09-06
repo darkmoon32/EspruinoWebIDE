@@ -81,6 +81,11 @@
         });
       }
     });
+    CodeMirror.on(codeMirror.getWrapperElement(), "mouseout", function(e) {
+      var tooltips = document.getElementsByClassName('CodeMirror-Tern-tooltip');
+        while(tooltips.length)
+          tooltips[0].parentNode.removeChild(tooltips[0]);
+    });
     // Options
     Espruino.Core.Config.add("DISABLE_CODE_HINTS", {
       section : "General",
@@ -149,6 +154,11 @@
   }
 
   function showTooltipFor(e, content, node) {
+    // remove any existing codemirror tooltips
+    var tooltips = document.getElementsByClassName('CodeMirror-Tern-tooltip');
+    while(tooltips.length)
+      tooltips[0].parentNode.removeChild(tooltips[0]);
+
     var tooltip = showTooltip(e, content);
     function hide() {
       CodeMirror.off(node, "mouseout", hide);

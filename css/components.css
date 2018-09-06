@@ -10,8 +10,13 @@
   position: relative;
   width: 100%;
   height: 100%;
-  padding-top: 30px;
 }
+
+  /* for windows that have a 'real' OS-visible title bar */
+  .window--app
+  {
+    padding-top: 30px;
+  }
 
   .window--modal
   {
@@ -22,6 +27,7 @@
   	width: 350px;
   	min-height: 110px;
   	height: auto;
+    padding-top: 30px;
   }
 
   .window--modal.window--stretch
@@ -193,6 +199,16 @@ a:hover > .menu
 	left: 0;
 }
 
+/* Loading indicator */
+.split-pane__loading {
+  position:absolute;
+  top:50%;left:50%;
+  transform: translate(-50%,-50%);
+  font-size:24px;
+  font-weight: bold;
+  color:#888;"
+}
+
 /* Status */
 .status
 {
@@ -271,6 +287,12 @@ a:hover > .menu
         right: 0;
         bottom: 0;
         overflow: hidden;
+}
+
+.editor__canvas__fullscreen
+{
+  left: 0;
+  z-index:  100;
 }
 
 /* Sidebar */
@@ -376,13 +398,9 @@ paddi   ng-left: 15px;
 
 /* Terminal */
 /* ----------------------------------------------------- */
-
-
 .terminal
 {
-  font-family: Fixed, monospace;
   font-size: 12px;
-  tab-size: 4;
   background-color: #222;
   color: white;
   display: block;
@@ -400,6 +418,12 @@ paddi   ng-left: 15px;
   -moz-user-select: text;
   -webkit-user-select: text;
   user-select: text;
+}
+
+.termLine {
+  font-family: Fixed, monospace;
+  tab-size: 4;
+
 }
 
 .terminal.focus
@@ -449,18 +473,18 @@ paddi   ng-left: 15px;
 
 .terminal--connected.focus .terminal__cursor
 {
-  -webkit-animation: blink 1s step-end 0s infinite;
   animation: blink 1s step-end 0s infinite;
 }
 
 .terminal--webcam.focus .terminal__cursor
 {
   text-shadow: none;
+  animation: blink_webcam 1s step-end 0s infinite;
 }
 
 @keyframes blink {
   0%, 100% {
-        background-color: #fff; /* not #aaa because it's seem there is Google Chrome bug */
+        background-color: #fff;
         color: #000;
   }
   50% {
@@ -468,16 +492,18 @@ paddi   ng-left: 15px;
         color: #aaa;
   }
 }
-@-webkit-keyframes blink {
+
+@keyframes blink_webcam {
   0%, 100% {
-        background-color: #ffffff; /* not #aaa because it's seem there is Google Chrome bug */
-        color: #000000;
+        background-color: #ffffffC0;
+        color: #000;
   }
   50% {
-        background-color: transparent;
-        color: #aaaaaa;
+        background-color: #000000C0;
+        color: #fff;
   }
 }
+
 
 /* Tutorial */
 .tutorial_text {
@@ -514,11 +540,40 @@ paddi   ng-left: 15px;
     border: 1px solid #1b7a43;
     border-radius: 10px;
     padding: 8px;
-    padding-left: 8px;
     margin-left: 16px;
     margin-right: 16px;
     margin-top: 8px;
     margin-bottom: 8px;
+}
+
+/* Other notifications */
+.terminal-status-container {
+  min-height: 34px;
+}
+.terminal-status {
+  float:right;
+  border-radius: 5px;
+  padding: 6px;
+  margin-top: 2px;
+}
+/* Other notifications */
+.terminal-status-success {
+  background-color: #2ecc71;
+}
+.terminal-status-error {
+  background-color: #e74c3c;
+}
+.terminal-status-info {
+  background-color: #3498db;
+}
+.terminal-status-warning {
+  background-color: #f39c12;
+}
+
+.terminal-inline-image {
+  border: 1px solid #666;
+  padding: 8px;
+  margin: 8px;
 }
 
 /* Code Editors */

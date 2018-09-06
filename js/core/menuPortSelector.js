@@ -58,7 +58,6 @@
       if (checkInt) clearInterval(checkInt);
       checkInt = undefined;
       popup.setContents('<h2 class="list__no-results">Connecting...</h2>');
-      Espruino.Core.Status.setStatus("Connecting...");
       function connect() {
         connectToPort(port, function(success){
           popup.close();
@@ -79,12 +78,6 @@
 
     function getPorts() {
       Espruino.Core.Serial.getPorts(function(items) {
-
-        if (window.location.toString().substr(0,7)=="http://" &&
-            items.length==1 && items[0].path=="Web Bluetooth") {
-          return selectPortInternal(items[0].path);
-        }
-
         if (items.toString() == lastContents)
           return; // same... don't update
         lastContents = items.toString();
@@ -96,6 +89,10 @@
           html = '<ul class="list">';
           for (var i in items) {
             var port = items[i];
+            // if autoconnect is set on this, just automatically connect, without displaying the window
+            if (port.autoconnect)
+              return selectPortInternal(port.path);
+
             var icon = "icon-usb";
             if (port.type=="bluetooth") icon = "icon-bluetooth";
             if (port.type=="socket") icon = "icon-network";
@@ -154,15 +151,20 @@
   function connectToPort(serialPort, callback)
   {
     if (!serialPort) {
-      Espruino.Core.Notifications.error("Invalid Serial Port");
+      Espruino.Core.Notifications.error("Invalid Serial Port ");
       return;
     }
-
+    Espruino.Core.Status.setStatus("Connecting...");
     Espruino.Core.Serial.setSlowWrite(true);
     Espruino.Core.Serial.open(serialPort, function(cInfo) {
       if (cInfo!=undefined) {
-        console.log("Device found (connectionId="+ cInfo.connectionId +")");
-        Espruino.Core.Notifications.success("Connected to port "+ serialPort, true);
+        console.log("Device found "+JSON.stringify(cInfo));
+        var name = serialPort;
+        if (cInfo.portName) name+=", "+cInfo.portName;
+        var boardData = Espruino.Core.Env.getBoardData();
+        if (!boardData.BOARD || !boardData.VERSION)
+          name += " (No response from board)";
+        Espruino.Core.Notifications.success("Connected to "+name, true);
         callback(true);
       } else {
         // fail
@@ -187,13 +189,15 @@
   }
 
   function disconnect() {
-    Espruino.Core.Serial.close();
+    if (Espruino.Core.Serial.isConnected())
+      Espruino.Core.Serial.close();
   }
 
   Espruino.Core.MenuPortSelector = {
       init : init,
 
       ensureConnected : ensureConnected,
+      connectToPort : connectToPort,
       disconnect : disconnect,
       showPortSelector: createPortSelector
   };

@@ -49,8 +49,9 @@ Espruino.Core.Status = {
 function readEspruinoToolsFile(p) {
   return require("fs").readFileSync(__dirname+"/EspruinoTools/"+p).toString();
 }
+eval(readEspruinoToolsFile("core/utils.js"));
 eval(readEspruinoToolsFile("core/serial.js"));
-eval(readEspruinoToolsFile("core/serial_nodeserial.js"));
+eval(readEspruinoToolsFile("core/serial_node_serial.js"));
 eval(readEspruinoToolsFile("core/serial_noble.js"));
 
 function ab2str(buf) {
@@ -108,7 +109,7 @@ var server = http.createServer(function(request, response) {
 
           blob = blob.toString();
           if (blob.indexOf("<!-- SERIAL_INTERFACES -->")<0) throw new Error("Expecing <!-- SERIAL_INTERFACES --> in main.html");
-          blob = blob.replace("<!-- SERIAL_INTERFACES -->", '<script src="EspruinoTools/core/serial_websocket.js"></script>');
+          blob = blob.replace("<!-- SERIAL_INTERFACES -->", '<script src="EspruinoTools/core/serial_websocket_relay.js"></script>');
         }
 
         response.writeHead(200);

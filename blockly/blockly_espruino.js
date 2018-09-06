@@ -10,12 +10,19 @@
  ------------------------------------------------------------------
 **/
 
-// --------------------------------- Blockly init code - see /js/core/editorBlockly.js
+
+/* Has Blockly been made visible yet? If not, we can't
+add any content because blockly will break all the sizing */
+var blocklyVisible = false;
+/* Include this and the next blocks will magically appear inside the function */
+var MAGIC_CALLBACK_CODE = "function(){NEXT_BLOCKS}";
+
+// --------------------------------- Blockly init code -
 window.onload = function() {
   var toolbox = document.getElementById('toolbox');
   // Remove any stuff we don't want from the toolbox...
   for (var i=0;i<toolbox.children.length;i++) {
-    var enable_if = toolbox.children[i].attributes.enable_if;
+    var enable_if = toolbox.children[i].attributes["enable_if"];
     if (enable_if) {
       var keep = false;
       if (window.location.search && window.location.search.indexOf("%7C"+enable_if.value+"%7C")>=0)
@@ -27,15 +34,39 @@ window.onload = function() {
     }
   }
   // Set up blockly from toolbox
-  Blockly.inject(document.body,{path: '', toolbox: toolbox});
-  // Set up initial code
-  Blockly.Xml.domToWorkspace(Blockly.mainWorkspace, document.getElementById('blocklyInitial'));
-  // Notify parent
-  window.parent.blocklyLoaded(Blockly, window); // see core/editorBlockly.js
+  Blockly.inject(document.body,{
+    toolbox: toolbox,
+    media: 'media/',
+  });
+
+  // Notify parent - see /js/core/editorBlockly.js
+  if (window.parent.blocklyLoaded)
+    window.parent.blocklyLoaded(Blockly, window); // see core/editorBlockly.js
 };
+
+// Patch up scrub_ to allow nested callbacks for stuff like 'wait'
+Blockly.JavaScript.scrub__ = Blockly.JavaScript.scrub_;
+Blockly.JavaScript.scrub_ = function(block, code) {
+  var callbackIdx = goog.isString(code) ? code.indexOf(MAGIC_CALLBACK_CODE) : -1;
+  if (callbackIdx>=0) {
+    var nextBlock = block.nextConnection && block.nextConnection.targetBlock();
+    var nextCode = Blockly.JavaScript.blockToCode(nextBlock);
+    return code.substr(0,callbackIdx)+"function() {\n"+
+             "  "+nextCode+"}"+code.substr(callbackIdx+MAGIC_CALLBACK_CODE.length);
+  } else
+    return Blockly.JavaScript.scrub__(block,code);
+}
 
 /* TODO: Looks like we could use Blockly.JavaScript.indentLines(code, Blockly.JavaScript.INDENT)
 to properly sort out the padding of all this stuff */
+
+// Hack around issues Blockly have if we initialise when the window isn't visible
+Blockly.setVisible = function(info) {
+  if (blocklyVisible) return;
+  blocklyVisible = true;
+  // Set up initial code
+  Blockly.Xml.domToWorkspace(Blockly.mainWorkspace, document.getElementById('blocklyInitial'));
+};
 
 // When we have JSON from the board, use it to
 // update our list of available pins
@@ -88,7 +119,7 @@ var ESPRUINO_COL = 190;
 var PORTS = ["A","B","C"];
 var PINS = [];
 for (var p in PORTS)
-  for (i=0;i<16;i++) {
+  for (var i=0;i<16;i++) {
     var pinname = PORTS[p]+i;
     PINS.push([pinname,pinname]);
   }
@@ -113,7 +144,6 @@ Blockly.Blocks.espruino_delay = {
     this.setTooltip(Blockly.Msg.ESPRUINO_WAIT_TOOLTIP);
   }
 };
-
 Blockly.Blocks.espruino_timeout = {
   category: 'Espruino',
   init: function() {
@@ -197,7 +227,7 @@ Blockly.Blocks.espruino_pin = {
 
     var start = 0;
     var incrementStep = 10;
-    var originalPin;
+    var originalPin = undefined;
     var listGen = function() {
       originalPin = this.value_;
       var list = PINS.slice(start, start+incrementStep);
@@ -207,6 +237,7 @@ Blockly.Blocks.espruino_pin = {
     };
 
     var pinSelector = new Blockly.FieldDropdown(listGen, function(selection){
+      var ret = undefined;
 
       if (selection == Blockly.Msg.ESPRUINO_MORE || selection == Blockly.Msg.ESPRUINO_BACK) {
         if (selection == Blockly.Msg.ESPRUINO_MORE)
@@ -234,7 +265,7 @@ Blockly.Blocks.espruino_LED_pin = {
     
     var start = 0;
     var incrementStep = 10;
-    var originalPin;
+    var originalPin = undefined;
     var listGen = function() {
       originalPin = this.value_;
       var list = LEDS.slice(start, start+incrementStep);
@@ -244,7 +275,7 @@ Blockly.Blocks.espruino_LED_pin = {
     };    
     
     var pinSelector = new Blockly.FieldDropdown(listGen, function(selection){
-      
+      var ret = undefined;
       if (selection == Blockly.Msg.ESPRUINO_MORE || selection == Blockly.Msg.ESPRUINO_BACK) {
         if (selection == Blockly.Msg.ESPRUINO_MORE)
           start += incrementStep;
@@ -271,7 +302,7 @@ Blockly.Blocks.espruino_BTN_pin = {
     
     var start = 0;
     var incrementStep = 10;
-    var originalPin;
+    var originalPin = undefined;
     var listGen = function() {
       originalPin = this.value_;
       var list = BTNS.slice(start, start+incrementStep);
@@ -281,7 +312,7 @@ Blockly.Blocks.espruino_BTN_pin = {
     };    
     
     var pinSelector = new Blockly.FieldDropdown(listGen, function(selection){
-      
+      var ret = undefined;
       if (selection == Blockly.Msg.ESPRUINO_MORE || selection == Blockly.Msg.ESPRUINO_BACK) {
         if (selection == Blockly.Msg.ESPRUINO_MORE)
           start += incrementStep;
@@ -308,7 +339,7 @@ Blockly.Blocks.espruino_PWM_pin = {
     
     var start = 0;
     var incrementStep = 10;
-    var originalPin;
+    var originalPin = undefined;
     var listGen = function() {
       originalPin = this.value_;
       var list = PWMS.slice(start, start+incrementStep);
@@ -318,7 +349,7 @@ Blockly.Blocks.espruino_PWM_pin = {
     };    
     
     var pinSelector = new Blockly.FieldDropdown(listGen, function(selection){
-      
+      var ret = undefined;
       if (selection == Blockly.Msg.ESPRUINO_MORE || selection == Blockly.Msg.ESPRUINO_BACK) {
         if (selection == Blockly.Msg.ESPRUINO_MORE)
           start += incrementStep;
@@ -1511,7 +1542,7 @@ Blockly.JavaScript.text_print = function() {
 Blockly.JavaScript.espruino_delay = function() {
   var seconds = Blockly.JavaScript.valueToCode(this, 'SECONDS',
       Blockly.JavaScript.ORDER_ASSIGNMENT) || '1';
-  return "var t=getTime()+"+seconds+";while(getTime()<t);\n";
+  return "setTimeout("+MAGIC_CALLBACK_CODE+", 1000*"+seconds+");\n"
 };
 Blockly.JavaScript.espruino_timeout = function() {
   var seconds = Blockly.JavaScript.valueToCode(this, 'SECONDS',
@@ -1543,12 +1574,12 @@ Blockly.JavaScript.espruino_change_interval = function() {
   return "changeInterval("+intr+","+seconds+"*1000.0);\n";
 };
 Blockly.JavaScript.espruino_pin = function() {
-  var code = this.getTitleValue('PIN');
+  var code = this.getFieldValue('PIN');
   return [code, Blockly.JavaScript.ORDER_ATOMIC];
 };
 Blockly.JavaScript.espruino_watch = function() {
   var pin = Blockly.JavaScript.valueToCode(this, 'PIN', Blockly.JavaScript.ORDER_ASSIGNMENT) || '0';
-  var edge = this.getTitleValue('EDGE');
+  var edge = this.getFieldValue('EDGE');
   var branch = Blockly.JavaScript.statementToCode(this, 'DO');
   var debounce = Blockly.JavaScript.valueToCode(this, 'DEBOUNCE', Blockly.JavaScript.ORDER_ASSIGNMENT) || '0';
   var json = { repeat : true, edge : edge, debounce : debounce };
@@ -1586,7 +1617,7 @@ Blockly.JavaScript.espruino_analogRead = function() {
 };
 Blockly.JavaScript.espruino_pinMode = function() {
   var pin = Blockly.JavaScript.valueToCode(this, 'PIN', Blockly.JavaScript.ORDER_ASSIGNMENT) || '0';
-  var mode = this.getTitleValue('MODE');
+  var mode = this.getFieldValue('MODE');
   return "pinMode("+pin+", "+JSON.stringify(mode)+");\n";
 };
 Blockly.JavaScript.espruino_code = function() {
@@ -1594,15 +1625,15 @@ Blockly.JavaScript.espruino_code = function() {
   return "eval("+code+");\n";
 };
 Blockly.JavaScript.espruino_PWM_pin = function() {
-  var code = this.getTitleValue('PIN');
+  var code = this.getFieldValue('PIN');
   return [code, Blockly.JavaScript.ORDER_ATOMIC];
 };
 Blockly.JavaScript.espruino_BTN_pin = function() {
-  var code = this.getTitleValue('PIN');
+  var code = this.getFieldValue('PIN');
   return [code, Blockly.JavaScript.ORDER_ATOMIC];
 };
 Blockly.JavaScript.espruino_LED_pin = function() {
-  var code = this.getTitleValue('PIN');
+  var code = this.getFieldValue('PIN');
   return [code, Blockly.JavaScript.ORDER_ATOMIC];
 };
 Blockly.JavaScript.espruino_jsexpression = function() {
@@ -1636,24 +1667,12 @@ Blockly.JavaScript.hw_ultrasonic = function() {
       "        "+distanceVar+".push((e.time-e.lastTime)*17544); },",
       "      "+echo+", {repeat:true, edge:'falling'});",
       "    setInterval(",
-      "      function(e) { digitalPulse("+trig+", 1, 0.01); }, 50);",
+      "      function(e) { digitalPulse("+trig+", 1, 0.01/*10uS*/); }, 50);",
       "  }",
       "  var d = "+distanceVar+".slice(0).sort();",
       "  return d[d.length>>1];",
       "}"]);
   return [funcVar+"()", Blockly.JavaScript.ORDER_ATOMIC];
-};
-Blockly.JavaScript.espruino_PWM_pin = function() {
-  var code = this.getTitleValue('PIN');
-  return [code, Blockly.JavaScript.ORDER_ATOMIC];
-};
-Blockly.JavaScript.espruino_BTN_pin = function() {
-  var code = this.getTitleValue('PIN');
-  return [code, Blockly.JavaScript.ORDER_ATOMIC];
-};
-Blockly.JavaScript.espruino_LED_pin = function() {
-  var code = this.getTitleValue('PIN');
-  return [code, Blockly.JavaScript.ORDER_ATOMIC];
 };
 
 Blockly.JavaScript.getconnecteddevices = function(block) {

@@ -6,7 +6,7 @@
  file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
  ------------------------------------------------------------------
-  An Example Plugin
+  Settings Menu
  ------------------------------------------------------------------
 **/
 "use strict";
@@ -32,7 +32,7 @@
 
   function createSettingsWindow(initialSection) {
     if (initialSection==undefined)
-      initialSection = "About";    
+      initialSection = "About";
     // Get sections
     var sections = Espruino.Core.Config.getSections();
     // Write list of sections
@@ -98,7 +98,7 @@
     if (section.descriptionHTML!==undefined)
       html += "<p>"+section.descriptionHTML+"<p>";
     if (section.description!==undefined)
-      html += "<p>"+Espruino.Core.Utils.escapeHTML(section.description, false).replace("\n","</p><p>") +"<p>";      
+      html += "<p>"+Espruino.Core.Utils.escapeHTML(section.description, false).replace("\n","</p><p>") +"<p>";
     if (section.tours!==undefined) {
       html += "<p>See the ";
       var tours = [];
@@ -129,8 +129,19 @@
     }
 
    $(".settings .currentsection input,select").change(function() {
+     // First, check for multi_select
+     var configGroup = $(this).attr("configGroup");
+     if (configGroup && configItems[configGroup] !== undefined) {
+       var checked = [];
+       $(this).parent().children().each(function() {
+         if ($(this).is(':checked')) checked.push($(this).val());
+       });
+      Espruino.Config.set(configGroup, "|"+checked.join("|")+"|");
+      return;
+     }
+     // Then simple one-off checkboxes
      var configName = $(this).attr("name");
-     if (configItems[configName] !== undefined) {
+     if (configName && configItems[configName] !== undefined) {
        if (configItems[configName].type == "boolean")
          Espruino.Config.set(configName, $(this).is(':checked'));
        else
@@ -159,7 +170,8 @@
     if (config.description!==undefined)
       desc += '<p>'+Espruino.Core.Utils.escapeHTML(config.description, false).replace("\n","</p><p>")+'</p>';
     // type : "int"/"boolean"/"string"/{ value1:niceName, value2:niceName },
-    if (config.type == "none") {
+    if (config.type == "none" || config.type===undefined) {
+      html += desc;
     } else if (config.type == "boolean") {
       html += '<input name="'+configName+'" type="checkbox" style="float: right;" '+(value?"checked":"")+'/>';
       html += desc;
@@ -167,30 +179,41 @@
       html += desc;
       html += '<input name="'+configName+'" type="text" size="80" value="'+Espruino.Core.Utils.escapeHTML(value)+'"/>';
     } else if ((typeof config.type) == "object") {
-      html += '<select name="'+configName+'" style="float: right;">';
-      for (var key in config.type)
-        html += '<option value="'+Espruino.Core.Utils.escapeHTML(key)+'" '+(key==value?"selected":"")+'>'+
-                  Espruino.Core.Utils.escapeHTML(config.type[key])+
-                '</option>';
-      html += '</select>';
+      if (config.type.multi_select==true) {
+        html += '<div name="'+configName+'" style="float: right;">';
+        for (var key in config.type) {
+          if (key=="multi_select") continue;
+          var checked = value.indexOf("|"+key+"|")>=0;
+          var id = configName+"_"+key;
+          html += '<input type="checkbox" id="'+id+'" configGroup="'+configName+'" name="'+id+'" value="'+key+'" '+(checked?"checked":"")+'>'+
+                  '<label for="'+id+'">'+Espruino.Core.Utils.escapeHTML(config.type[key])+'</label><br/>';
+        }
+        html += '</div>';
+      } else {
+        html += '<select name="'+configName+'" style="float: right;">';
+        for (var key in config.type)
+          html += '<option value="'+Espruino.Core.Utils.escapeHTML(key)+'" '+(key==value?"selected":"")+'>'+
+                    Espruino.Core.Utils.escapeHTML(config.type[key])+
+                  '</option>';
+        html += '</select>';
+      }
       html += desc;
     } else if (config.type == "button") {
       var label = config.label || "Go";
       html += '<button name="'+configName+'" style="float: right;" '+(value?"checked":"")+'>'+label+'</button>';
       html += desc;
-    } else
+    } else {
       console.warn("Unknown config type '"+config.type+"' for Config."+configName);
-
+    }
     return html;
   }
-  
+
   function refresh() {
     showSettingsSection(currentSection);
   }
 
   Espruino.Core.MenuSettings = {
     init : init,
-
     show : createSettingsWindow,
     refresh : refresh,
   };

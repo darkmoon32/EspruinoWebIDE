@@ -1855,7 +1855,7 @@ Blockly.JavaScript.YL64_read = function()
 //wifi esp8266 connect
 Blockly.JavaScript.esp8266_connect = function()
 {
-  var ser = this.getTitleValue('SER');
+  var ser = this.getFieldValue('SER');
   var baud = Blockly.JavaScript.valueToCode(this, 'BAUD', Blockly.JavaScript.ORDER_ATOMIC) || '0';
   var rx = Blockly.JavaScript.valueToCode(this, 'RX', Blockly.JavaScript.ORDER_ATOMIC) || '0';
   var tx = Blockly.JavaScript.valueToCode(this, 'TX', Blockly.JavaScript.ORDER_ATOMIC) || '0';

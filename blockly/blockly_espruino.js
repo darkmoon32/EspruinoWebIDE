@@ -1604,11 +1604,12 @@ Blockly.JavaScript.espruino_analogWrite = function() {
   var pin = Blockly.JavaScript.valueToCode(this, 'PIN', Blockly.JavaScript.ORDER_ASSIGNMENT) || '0';
   var val = Blockly.JavaScript.valueToCode(this, 'VAL', Blockly.JavaScript.ORDER_ASSIGNMENT) || '0';
   var freq = Blockly.JavaScript.valueToCode(this, 'FREQ', Blockly.JavaScript.ORDER_ASSIGNMENT) || '0';
-  if(freq > 0){
+  if(freq != 0){
     freq = ',{freq:' + freq + '}';
   }
-  else
+  else {
     freq = '';
+  }
   return "analogWrite("+pin+", "+val+""+freq+");\n";
 };
 Blockly.JavaScript.espruino_analogRead = function() {
@@ -1755,7 +1756,7 @@ Blockly.JavaScript.text_fromcharcode = function(block) {
 Blockly.JavaScript.text_charCodeAt = function(block) {
   var value_str = Blockly.JavaScript.valueToCode(block, 'STR', Blockly.JavaScript.ORDER_ATOMIC);
   var value_pos = Blockly.JavaScript.valueToCode(block, 'POS', Blockly.JavaScript.ORDER_ATOMIC);
-  var code = value_str + ".charCodeAt(" + ( value_pos - 1 ) + ")";
+  var code = value_str + ".charCodeAt(" + value_pos + " - 1)";
   return [code, Blockly.JavaScript.ORDER_NONE];
 };
 

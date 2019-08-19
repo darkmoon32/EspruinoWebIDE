@@ -1,0 +1,11 @@
+.git
+.gitmodules
+.project
+.settings
+CONTRIBUTING.md
+EspruinoWebIDE.zip 
+embed.js 
+extras
+unused
+relay
+EspruinoTools/node_modules

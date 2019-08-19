@@ -50,7 +50,7 @@
       section : "General",
       name : "Graphical Editor Language",
       description : "The language to use for blocks in the graphical editor. Modifying this will restart Blockly and lose any changes.",
-      type : { "en": "English", "ru":"Russian", "cz":"Czech" },
+      type : { "en": "English", "ru":"Russian", "de": "German", "cz":"Czech" },
       defaultValue : "en",
       onChange : updateBlocklyURL
     });
@@ -62,10 +62,11 @@
        "bluetooth":"Bluetooth LE (Puck.js)",
        "robot":"Espruino Pico Robot",
        "motorshield":"Amperka Motor shield",
-       "nordic_thingy":"Nordic Thingy:52"
+       "nordic_thingy":"Nordic Thingy:52",
+       "smartibot":"Smartibot"
       },
-      onChange : updateBlocklyURL,
-      defaultValue : ""//|bluetooth|robot|
+      defaultValue : "",//|bluetooth|robot|
+      onChange : updateBlocklyURL
     });
     // Add the HTML we need
     Espruino.addProcessor("initialised", function(data,callback) {
@@ -84,6 +85,19 @@
       if (Blockly!==undefined && Blockly.setBoardJSON!==undefined)
         Blockly.setBoardJSON(data);
       callback(data);
+    });
+    // When we connect, see what board we're connected to
+    Espruino.addProcessor("environmentVar", function(env, callback) {
+      callback(env);
+      if (env && env.BOARD=="SMARTIBOT" && Espruino.Config.BLOCKLY_EXTENSIONS.indexOf("|smartibot|")==-1) {
+        Espruino.Core.Terminal.addNotification('Looks like you\'re using <a href="https://www.espruino.com/Smartibot" target="_blank">Smartibot</a>!<br>'+
+                                               '<button id="addblocklyblocks">Click here</button> to enable Smartibot Blockly blocks.');
+        setTimeout(function() {
+          var links = document.querySelectorAll("#addblocklyblocks");
+          for (var i=0;i<links.length;i++)
+            links[i].onclick = function() { Espruino.Core.EditorBlockly.addBlocksFor('smartibot'); };
+        }, 500);
+      }
     });
   }
 
@@ -123,11 +137,22 @@
     Blockly.setVisible();
   }
 
+  // Add blocks for something specific to BLOCKLY_EXTENSIONS
+  function addBlocksFor(id) {
+    if (Espruino.Config.BLOCKLY_EXTENSIONS.indexOf("|"+id+"|")==-1) {
+      var e = Espruino.Config.BLOCKLY_EXTENSIONS;
+      if (!e.length) e="|"+id+"|";
+      else e += id+"|";
+      Espruino.Config.set("BLOCKLY_EXTENSIONS", e);
+    }
+  }
+
   Espruino.Core.EditorBlockly = {
     init : init,
     getCode : getCode,
     getXML : getXML,
     setXML : setXML,
     setVisible : setVisible,
+    addBlocksFor : addBlocksFor
   };
 }());

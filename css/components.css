@@ -144,7 +144,7 @@ a:hover > .menu
 {
   display: none;
   position: absolute;
-  width: 180px;
+  width: 230px;
   padding: 10px;
   background: #2c80b9;
   z-index: 2000;
@@ -307,6 +307,12 @@ a:hover > .menu
 .sidebar .v-split
 {
 	background: #42484a;
+}
+
+.splitster__bar--ghost
+{
+	background: #3498db;
+  opacity: 0.5;
 }
 
 /* Lists */
@@ -555,6 +561,7 @@ paddi   ng-left: 15px;
   border-radius: 5px;
   padding: 6px;
   margin-top: 2px;
+  clear: both;
 }
 /* Other notifications */
 .terminal-status-success {

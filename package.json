@@ -1,6 +1,6 @@
 {
   "name": "espruino-web-ide",
-  "version": "0.70.3",
+  "version": "0.71.5",
   "description": "A Terminal and Graphical code Editor for Espruino JavaScript Microcontrollers",
   "//1": "-------------------------------------------------------- nw.js",
   "main": "main.html",
@@ -43,8 +43,8 @@
     "websocket": "^1.0.23"
   },
   "optionalDependencies": {
-    "noble": "^1.7.0",
-    "serialport": "^4.0.4",
+    "noble": "^1.9.1",
+    "serialport": "^7.1.4",
     "winnus": ""
   },
   "devDependencies": {}

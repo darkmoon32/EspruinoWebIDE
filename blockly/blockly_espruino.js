@@ -720,7 +720,7 @@ Blockly.Blocks.espruino_pinMode = {
       this.setNextStatement(true);
       this.setColour(ESPRUINO_COL);
       this.setInputsInline(true);
-      this.setTooltip(Blockly.Msg.ESPRUINO_PINODE_TOOLTIP);
+      this.setTooltip(Blockly.Msg.ESPRUINO_PINMODE_TOOLTIP);
     },
   PINMODES: [
   ["input", 'input'],

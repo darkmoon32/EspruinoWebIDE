@@ -499,6 +499,24 @@
         <value name="CS"><block type="espruino_pin"><title name="PIN">B2</title></block></value>
       </block>
       <block type="rc522_findcards"></block>
+      <block type="i2c_setup">
+        <field name="PORT">1</field>
+        <field name="SPEED">100000</field>
+      <next>
+      <block type="variables_set">
+        <field name="VAR">laser</field>
+        <value name="VALUE">
+          <block type="vl53l1x_init">
+            <field name="PORT">1</field>
+            <field name="RANGE">short</field>
+            <field name="MEASUREMENT_PERIOD">20</field>
+          </block>
+        </value>
+      </block>
+      </next>
+      </block>
+      
+      <block type="vl53l1x_read"></block>
     </category>
     <category name="Functions" custom="PROCEDURE"></category>
   </xml>

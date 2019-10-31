@@ -146,6 +146,7 @@ var PWMS = [["PWM1","PWM1"],["PWM2","PWM2"],["PWM3","PWM3"],["PWM4","PWM4"],["PW
 var LEDS = [["RED1","RED1"],["RED2","RED2"],["RED3","RED3"],["RED4","RED4"],["GREEN1","GREEN1"],["GREEN2","GREEN2"],["GREEN3","GREEN3"],["GREEN4","GREEN4"]];
 var BTNS = [["BTN1","BTN1"],["BTN2","BTN2"],["BTN3","BTN3"],["BTN4","BTN4"],["BTN5","BTN5"]];
 var INS = [["PORT_IN1","{\"A0\":\"A7\",\"D0\":\"D6\",\"D1\":\"C12\",\"D2\":\"D2\"}"],["PORT_IN2","{\"A0\":\"A6\",\"D0\":\"D5\",\"D1\":\"B6\",\"D2\":\"B7\"}"],["PORT_IN3","{\"A0\":\"A5\",\"D0\":\"D4\",\"D1\":\"B10\",\"D2\":\"B11\"}"],["PORT_IN4","{\"A0\":\"A4\",\"D0\":\"D3\",\"D1\":\"C10\",\"D2\":\"C11\"}"],["PORT_OUT1","{\"A0\":\"D12\",\"D0\":\"D13\",\"D1\":\"D15\",\"D2\":\"D14\"}"],["PORT_OUT2","{\"A0\":\"B15\",\"D0\":\"B14\",\"D1\":\"C9\",\"D2\":\"C8\"}"],["PORT_OUT3","{\"A0\":\"E14\",\"D0\":\"E13\",\"D1\":\"A3\",\"D2\":\"A2\"}"],["PORT_OUT4","{\"A0\":\"E11\",\"D0\":\"E9\",\"D1\":\"A1\",\"D2\":\"A0\"}"]];
+var NEW_INS = [["PORT_IN1", "0"],["PORT_IN2", "1"],["PORT_IN3", "2"],["PORT_IN4", "3"],["PORT_OUT1", "4"],["PORT_OUT2", "5"],["PORT_OUT3", "6"],["PORT_OUT4", "7"]];
 Blockly.Blocks.espruino_delay = {
   category: 'Espruino',
   init: function() {
@@ -1535,6 +1536,59 @@ Blockly.Blocks['line_sensor_3_diodes_d'] = {
   }
 };
 
+Blockly.Blocks['i2c_setup'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField(Blockly.Msg.I2C_SETUP_DESC)
+        .appendField(new Blockly.FieldDropdown([NEW_INS[1], NEW_INS[2]]), "PORT");
+    this.appendDummyInput()
+        .appendField(Blockly.Msg.I2C_SETUP_SPEED)
+        .appendField(new Blockly.FieldNumber(100000, 100000, 400000), "SPEED");
+    this.setInputsInline(true);
+    this.setPreviousStatement(true, null);
+    this.setNextStatement(true, null);
+    this.setColour(ESPRUINO_COL);
+ this.setTooltip(Blockly.Msg.I2C_SETUP_TOOLTIP);
+ this.setHelpUrl(Blockly.Msg.I2C_SETUP_HELPURL);
+  }
+};
+
+Blockly.Blocks['vl53l1x_init'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField(Blockly.Msg.VL53L1X_INIT_PORT)
+        .appendField(new Blockly.FieldDropdown([NEW_INS[1], NEW_INS[2]]), "PORT");
+    this.appendDummyInput()
+        .appendField(Blockly.Msg.VL53L1X_INIT_RANGE)
+        .appendField(new Blockly.FieldDropdown([["short","short"], ["medium","medium"], ["long","long"]]), "RANGE");
+    this.appendDummyInput()
+        .appendField(Blockly.Msg.VL53L1X_INIT_PERIOD)
+        .appendField(new Blockly.FieldNumber(20, 20, 500), "MEASUREMENT_PERIOD")
+        .appendField(Blockly.Msg.VL53L1X_INIT_MS);
+    this.setInputsInline(true);
+    this.setOutput(true, null);
+    this.setColour(ESPRUINO_COL);
+    this.setTooltip(Blockly.Msg.VL53L1X_INIT_TOOLTIP);
+    this.setHelpUrl(Blockly.Msg.VL53L1X_INIT_HELPURL);
+  }
+};
+
+Blockly.Blocks['vl53l1x_read'] = {
+  init: function() {
+    this.appendValueInput("NAME")
+        .setCheck(null)
+        .appendField(Blockly.Msg.VL53L1X_READ_INSTANCE);
+    this.appendDummyInput()
+        .appendField(Blockly.Msg.VL53L1X_READ_AS_ARRAY)
+        .appendField(new Blockly.FieldCheckbox("FALSE"), "AS_ARRAY");
+    this.setInputsInline(true);
+    this.setOutput(true, null);
+    this.setColour(ESPRUINO_COL);
+    this.setTooltip(Blockly.Msg.VL53L1X_READ_TOOLTIP);
+    this.setHelpUrl(Blockly.Msg.VL53L1X_INIT_HELPURL);
+  }
+};
+
 // -----------------------------------------------------------------------------------
 // -----------------------------------------------------------------------------------
 // -----------------------------------------------------------------------------------
@@ -2055,5 +2109,42 @@ Blockly.JavaScript.encoder_get = function(block) {
   var variable_var = Blockly.JavaScript.variableDB_.getName(block.getFieldValue('VAR'), Blockly.Variables.NAME_TYPE);
   var dropdown_function = block.getFieldValue('FUNCTION');
   var code = variable_var + '.' + dropdown_function + '()';
+  return [code, Blockly.JavaScript.ORDER_NONE];
+};
+
+Blockly.JavaScript['i2c_setup'] = function(block) {
+  var dropdown_port = block.getFieldValue('PORT');
+  var number_speed = block.getFieldValue('SPEED');
+  var port = JSON.parse(INS[dropdown_port][1]);
+  var code = "I2C" + dropdown_port + ".setup({sda:" + port.D2 + ",scl:" + port.D1 + "});";
+  return code;
+};
+
+Blockly.JavaScript['vl53l1x_init'] = function(block) {
+  var dropdown_port = block.getFieldValue('PORT');
+  var dropdown_range = block.getFieldValue('RANGE');
+  var number_measurement_period = block.getFieldValue('MEASUREMENT_PERIOD');
+  var code;
+  var I2C;
+  var port = JSON.parse(INS[dropdown_port][1]);
+  var functionName = Blockly.JavaScript.provideFunction_(
+    "getLaserMeasurement",
+    [ "function " + Blockly.JavaScript.FUNCTION_NAME_PLACEHOLDER_ + "(instance, as_array) {",
+      "  var dist = instance.readMeasurement();",
+      "  if(as_array){",
+      "    return [dist.status == \"RangeValid\" ? 1 : 0, dist.distance, dist.signalRate, dist.ambientRate, dist.effectiveSpadRtnCount];",
+      "  }",
+      "  else {",
+      "    return dist.status == \"RangeValid\" ? dist.distance : -1;",
+      "  }",
+      "}"]);
+  code = "require(\"VL53L1X\").connect(I2C" + dropdown_port + ", { distanceMode: '" + dropdown_range + "', timingBudget: " + (number_measurement_period * 1000) + ", enable2V8Mode: false, interMeasurementPeriod: " + number_measurement_period + " })"
+  return [code, Blockly.JavaScript.ORDER_ATOMIC];
+};
+
+Blockly.JavaScript['vl53l1x_read'] = function(block) {
+  var value_name = Blockly.JavaScript.valueToCode(block, 'NAME', Blockly.JavaScript.ORDER_ATOMIC) || 0;
+  var checkbox_as_array = block.getFieldValue('AS_ARRAY') == 'TRUE';
+  var code = "getLaserMeasurement(" + value_name + ", " + checkbox_as_array + ")";
   return [code, Blockly.JavaScript.ORDER_NONE];
 };

@@ -640,5 +640,5 @@ if (window.location.href.indexOf("lang=cz")>=0) {
       /** @export */ Blockly.Msg.VL53L1X_INIT_HELPURL = "http://www.espruino.com/VL53L1X";
       /** @export */ Blockly.Msg.VL53L1X_READ_INSTANCE = "VL53L1x read. Instance";
       /** @export */ Blockly.Msg.VL53L1X_READ_AS_ARRAY = "As array";
-      /** @export */ Blockly.Msg.VL53L1X_READ_TOOLTIP = "Read one range measurement and return array. If checkbox is checked then first item is validity of measurement, second is measured value, etc.. I checkbox is unchecked then return distance if valid and -1 when invalid";
+      /** @export */ Blockly.Msg.VL53L1X_READ_TOOLTIP = "Read one range measurement and return array. If checkbox is checked then first item is validity of measurement, second is measured value, etc.. If checkbox is unchecked then return distance if valid and -1 when invalid";
 }

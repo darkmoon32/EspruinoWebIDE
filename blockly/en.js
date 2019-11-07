@@ -629,4 +629,17 @@ if (window.location.href.indexOf("lang=en")>=0 ||
       /** @export */ Blockly.Msg.WIFI_GET_CONNECTED_DEVICES_CB = "Get connected devices";
       /** @export */ Blockly.Msg.WIFI_GET_CONNECTED_DEVICES_TOOLTIP = "Get list of connected devices. callback(err,devices)";
       /** @export */ Blockly.Msg.WIFI_GET_CONNECTED_DEVICES_HELPURL = "http://www.espruino.com/modules/ESP8266WiFi_0v25.js";
+      /** @export */ Blockly.Msg.I2C_SETUP_DESC = "Setup I2C in port";
+      /** @export */ Blockly.Msg.I2C_SETUP_SPEED = "bus speed";
+      /** @export */ Blockly.Msg.I2C_SETUP_TOOLTIP = "Configure I2C bus";
+      /** @export */ Blockly.Msg.I2C_SETUP_HELPURL = "http://www.espruino.com/Reference#t_l_I2C_setup";
+      /** @export */ Blockly.Msg.VL53L1X_INIT_PORT = "VL53l1x Init. Port";
+      /** @export */ Blockly.Msg.VL53L1X_INIT_RANGE = "Range type";
+      /** @export */ Blockly.Msg.VL53L1X_INIT_PERIOD = "Measurement period";
+      /** @export */ Blockly.Msg.VL53L1X_INIT_MS = "ms";
+      /** @export */ Blockly.Msg.VL53L1X_INIT_TOOLTIP = "Initialize VL53l1x module";
+      /** @export */ Blockly.Msg.VL53L1X_INIT_HELPURL = "http://www.espruino.com/VL53L1X";
+      /** @export */ Blockly.Msg.VL53L1X_READ_INSTANCE = "VL53L1x read. Instance";
+      /** @export */ Blockly.Msg.VL53L1X_READ_AS_ARRAY = "As array";
+      /** @export */ Blockly.Msg.VL53L1X_READ_TOOLTIP = "Read one range measurement and return array. If checkbox is checked then first item is validity of measurement, second is measured value, etc.. If checkbox is unchecked then return distance if valid and -1 when invalid";"
 }

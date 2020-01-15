@@ -2116,7 +2116,7 @@ Blockly.JavaScript['i2c_setup'] = function(block) {
   var dropdown_port = block.getFieldValue('PORT');
   var number_speed = block.getFieldValue('SPEED');
   var port = JSON.parse(INS[dropdown_port][1]);
-  var code = "I2C" + dropdown_port + ".setup({sda:" + port.D2 + ",scl:" + port.D1 + "});";
+  var code = "I2C" + dropdown_port + ".setup({sda:" + port.D2 + ",scl:" + port.D1 + ", bitrate:" + number_speed});";
   return code;
 };
 
@@ -2138,7 +2138,7 @@ Blockly.JavaScript['vl53l1x_init'] = function(block) {
       "    return dist.status == \"RangeValid\" ? dist.distance : -1;",
       "  }",
       "}"]);
-  code = "require(\"VL53L1X\").connect(I2C" + dropdown_port + ", { distanceMode: '" + dropdown_range + "', timingBudget: " + (number_measurement_period * 1000) + ", enable2V8Mode: false, interMeasurementPeriod: " + number_measurement_period + " })"
+  code = "require(\"https://raw.githubusercontent.com/darkmoon32/espruino-modules/master/VL53L1X.js\").connect(I2C" + dropdown_port + ", { distanceMode: '" + dropdown_range + "', timingBudget: " + (number_measurement_period * 1000) + ", enable2V8Mode: false, interMeasurementPeriod: " + number_measurement_period + ", xshut: " + port.D0 + " })"
   return [code, Blockly.JavaScript.ORDER_ATOMIC];
 };
 

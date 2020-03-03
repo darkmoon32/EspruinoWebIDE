@@ -2116,7 +2116,7 @@ Blockly.JavaScript['i2c_setup'] = function(block) {
   var dropdown_port = block.getFieldValue('PORT');
   var number_speed = block.getFieldValue('SPEED');
   var port = JSON.parse(INS[dropdown_port][1]);
-  var code = "I2C" + dropdown_port + ".setup({sda:" + port.D2 + ",scl:" + port.D1 + ", bitrate:" + number_speed});";
+  var code = "I2C" + dropdown_port + ".setup({sda:" + port.D2 + ",scl:" + port.D1 + ", bitrate:" + number_speed + "});";
   return code;
 };
 

@@ -17,18 +17,19 @@
   window.blocklyLoaded = function(blockly, blocklyWindow) { // see blockly/blockly.html
     Blockly = blockly;
     if (blocklyWindow) {
-      blocklyWindow.promptAsync = function(title,value,callback) {
+      blocklyWindow.Blockly.prompt = function(title,value,callback) {
         var popup = Espruino.Core.App.openPopup({
           title: "Graphical Editor:",
           padding: true,
           contents: '<p>'+Espruino.Core.Utils.escapeHTML(title)+'</p>'+
                      '<input id="promptinput" value="'+Espruino.Core.Utils.escapeHTML(value)+'" style="width:100%"/>' ,
           position: "center",
-          next : function() {
-            var value = $('#promptinput').val();
-            popup.close();
-            callback(value);
-          }
+          buttons : [
+            { name:"Next", callback : function() {
+              var value = $('#promptinput').val();
+              popup.close();
+              callback(value);
+            }}]
         });
         $('#promptinput').focus();
 
@@ -91,12 +92,11 @@
       callback(env);
       if (env && env.BOARD=="SMARTIBOT" && Espruino.Config.BLOCKLY_EXTENSIONS.indexOf("|smartibot|")==-1) {
         Espruino.Core.Terminal.addNotification('Looks like you\'re using <a href="https://www.espruino.com/Smartibot" target="_blank">Smartibot</a>!<br>'+
-                                               '<button id="addblocklyblocks">Click here</button> to enable Smartibot Blockly blocks.');
-        setTimeout(function() {
-          var links = document.querySelectorAll("#addblocklyblocks");
-          for (var i=0;i<links.length;i++)
-            links[i].onclick = function() { Espruino.Core.EditorBlockly.addBlocksFor('smartibot'); };
-        }, 500);
+                                               '<button>Click here</button> to enable Smartibot Blockly blocks.',
+                                               { buttonclick : function() {
+                                                   Espruino.Core.EditorBlockly.addBlocksFor('smartibot');
+                                                 }
+                                               });
       }
     });
   }
@@ -129,7 +129,7 @@
 
   function setXML(xml) {
     Blockly.mainWorkspace.clear();
-    Blockly.Xml.domToWorkspace(Blockly.mainWorkspace, Blockly.Xml.textToDom(xml));
+    Blockly.Xml.domToWorkspace(Blockly.Xml.textToDom(xml), Blockly.mainWorkspace);
   }
 
   // Hack around issues Blockly have if we initialise when the window isn't visible

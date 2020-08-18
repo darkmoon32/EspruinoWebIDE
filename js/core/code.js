@@ -9,7 +9,6 @@
   Handling the getting and setting of code
  ------------------------------------------------------------------
 **/
-"use strict";
 (function(){
 
   var viewModeButton;
@@ -19,7 +18,7 @@
     Espruino.Core.Config.add("AUTO_SAVE_CODE", {
       section : "Communications",
       name : "Auto Save",
-      description : "Save code to Chrome's cloud storage when clicking 'Send to Espruino'?",
+      description : "Save code to local storage",
       type : "boolean",
       defaultValue : true,
     });
@@ -47,31 +46,29 @@
     // get code from our config area at bootup
     Espruino.addProcessor("initialised", function(data,callback) {
       var code;
-      if (Espruino.Config.CODE) {
-        code = Espruino.Config.CODE;
-        console.log("Loaded code from storage.");
-      } else {
-        code = "var  on = false;\nsetInterval(function() {\n  on = !on;\n  LED1.write(on);\n}, 500);";
+      if (Espruino.Config.AUTO_SAVE_CODE && typeof window !== 'undefined' && window.localStorage) {
+        code = window.localStorage.getItem("JSCODE");
+        console.log("Loaded code from local storage.");
+      }
+      if (!code) {
+        code = Espruino.Core.Code.DEFAULT_CODE;
         console.log("No code in storage.");
       }
       Espruino.Core.EditorJavaScript.setCode(code);
       callback(data);
     });
-
-
     Espruino.addProcessor("sending", function(data, callback) {
-      if(Espruino.Config.AUTO_SAVE_CODE)
-        Espruino.Config.set("CODE", Espruino.Core.EditorJavaScript.getCode()); // save the code
+      // save the code to local storage - not rate limited
+      if(Espruino.Config.AUTO_SAVE_CODE && typeof window !== 'undefined' && window.localStorage)
+        window.localStorage.setItem("JSCODE", Espruino.Core.EditorJavaScript.getCode());
       callback(data);
     });
-    // try and save code when window closes
-    function saveCode(e) {
-      if(Espruino.Config.AUTO_SAVE_CODE)
-        Espruino.Config.set("CODE", Espruino.Core.EditorJavaScript.getCode());
-    }
-    window.addEventListener("close", saveCode);
-    if (!Espruino.Core.Utils.isChromeWebApp()) // chrome complains if we use this
-      window.addEventListener("beforeunload", saveCode);
+    Espruino.addProcessor("jsCodeChanged", function(data, callback) {
+      // save the code to local storage - not rate limited
+      if(Espruino.Config.AUTO_SAVE_CODE && typeof window !== 'undefined' && window.localStorage)
+        window.localStorage.setItem("JSCODE", data.code);
+      callback(data);
+    });
   }
 
   function isInBlockly() { // TODO: we should really enumerate views - we might want another view?
@@ -102,12 +99,23 @@
     }
   }
 
+  function focus() {
+    if (isInBlockly()) {
+      document.querySelector("#divblockly").focus();
+    } else {
+      //document.querySelector(".CodeMirror").focus();
+      Espruino.Core.EditorJavaScript.getCodeMirror().focus()
+    }
+  }
+
   Espruino.Core.Code = {
     init : init,
     getEspruinoCode : getEspruinoCode, // get the currently selected bit of code ready to send to Espruino (including Modules)
     getCurrentCode : getCurrentCode, // get the currently selected bit of code (either blockly or javascript editor)
     isInBlockly: isInBlockly,
     switchToCode: switchToCode,
-    switchToBlockly: switchToBlockly
+    switchToBlockly: switchToBlockly,
+    focus : focus, // give focus to the current code editor
+    DEFAULT_CODE : "var  on = false;\nsetInterval(function() {\n  on = !on;\n  LED1.write(on);\n}, 500);"
   };
 }());

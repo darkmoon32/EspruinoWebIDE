@@ -43,6 +43,7 @@
     menu: []
   };
   var initialised = false;
+  var _idcounter = 1;
 
   /**
    * Initialize the window
@@ -175,12 +176,13 @@
       return;
     }
 
-    var mylist = typeof container === "string" ? $(container) : container;
-    var listitems = mylist.children(/*'a'*/).get();
+    var mylist = typeof container === "string" ? document.querySelector(container) : container;
+    if (!mylist) return;
+    var listitems = Espruino.Core.HTML.domToArray(mylist.children);
     listitems.sort(function(a, b) {
-       return parseFloat($(a).data("icon-order")) - parseFloat($(b).data("icon-order"));
+       return parseFloat(a.getAttribute("data-icon-order")) - parseFloat(b.getAttribute("data-icon-order"));
     });
-    $.each(listitems, function(idx, itm) { mylist.append(itm); });
+    listitems.forEach(function(itm) { mylist.append(itm); });
   }
 
   /**
@@ -188,36 +190,64 @@
    */
   function closePopup()
   {
-    var api = $(".window--modal").data("api");
-    if(api)
-        api.close();
+    var win = document.querySelector(".window--modal");
+    if (win) {
+      var api = win.data_api;
+      if(api) api.close();
+    }
   }
 
-  /**
-   * Open a popup window
-   */
+/**
+  * Open a popup window
+  *
+  * options = {
+  *   id    : a unique ID for this window
+  *   position  : "center" // middle of screen, small
+                  "stretch" // across the screen
+                  "auto"    // auto width, enough height to show all contents
+  *   padding  : bool - add padding or not?
+  *   width / height : set size in pixels
+  *   title : title text
+  *   contents : html contents
+  *   buttons : [ {name, callback}, ... ] - add  button and call callback when clicked
+  *
+  * returns : {
+  *  setContents, // set window contents
+  *  close, // close this window
+  *  window  // the window's dom element
+  * }
+  */
   function openPopup(options)
   {
+    if (!options.id) options.id = "_popup"+_idcounter++;
     // Declare API first, as we need to make sure the close button / overlay click
     // call the methods on the API object, rathert than a copy of the close method
     // so that the close method can be overridden with extra logic if needed.
     var api = {
-      setContents : function(contents)
-      {
-        $(".window--modal > .window__viewport").html(contents);
+      setContents : function(contents) {
+        var viewport = winModal.querySelector(".window__viewport");
+        if ("string" == typeof contents)
+          viewport.innerHTML = contents;
+        else {
+          while (viewport.lastElementChild!==null)
+            viewport.lastElementChild.remove();
+          viewport.append(contents);
+        }
       },
-      close : function(){
-        $(".window__overlay").remove();
+      close : function() {
+        winOverlay.remove();
       }
     }
 
+
     // Append the modal overlay
-    $('<div class="window__overlay"><div class="window__overlay-inner"></div></div>').appendTo(".window > .window__viewport").click(function(){
-      api.close();
+    var winOverlay = Espruino.Core.HTML.domElement('<div class="window__overlay"><div class="window__overlay-inner"></div></div>');
+    document.querySelector(".window > .window__viewport").append(winOverlay);
+    winOverlay.addEventListener("click", function(w) {
+      api.close()
     });
-    var optid = (options.id) ? 'id="' + options.id + '"' : '';
     // Append the popup window
-    $('<div class="window window--modal window--'+ options.position +'"' + optid + '>'+
+    var winModal = Espruino.Core.HTML.domElement('<div class="window window--modal window--'+ options.position +'" id="' + options.id + '">'+
           '<div class="window__title-bar title-bar">'+
             '<h5 class="title-bar__title">'+ options.title +'</h5>'+
             '<div class="title-bar__buttons"></div>'+
@@ -227,35 +257,46 @@
             options.contents +
             (options.padding ? '</div>':'')+
           '</div>'+
-        '</div>').appendTo(".window__overlay-inner").click(function(e){ e.stopPropagation(); })
-
-    // Append close button
-    $('<a class="icon-cross sml title-bar__button title-bar__button--close" title="Close"></a>').appendTo(".window--modal .title-bar__buttons").click(function(){
-      api.close();
+        '</div>');
+    winModal.addEventListener("click", function(e) {
+      e.stopPropagation();
+    });
+    winOverlay.querySelector(".window__overlay-inner").append(winModal);
+    winOverlay.addEventListener("click", function(e) {
+      e.stopPropagation();
     });
 
+    // Append close button
+    var winClose = Espruino.Core.HTML.domElement('<a class="icon-cross sml title-bar__button title-bar__button--close" title="Close"></a>');
+    winClose.addEventListener("click", function(e) {
+      api.close();
+    });
+    winModal.querySelector(".title-bar__buttons").append(winClose);
+
     // Append 'next'/'ok' button if we registered a callback
-    if (options.next) {
-      $('<div class="guiders_buttons_container" style="padding: 10px 10px 10px 10px;bottom:10px;"><a class="guiders_button" href="#">Next</a></div>')
-        .appendTo(".window--modal .window__viewport").click(options.next);
-    }
-    if (options.ok) {
-      $('<div class="guiders_buttons_container" style="padding: 10px 10px 10px 10px;bottom:10px;"><a class="guiders_button" href="#">Ok</a></div>')
-        .appendTo(".window--modal .window__viewport").click(options.ok);
+
+    var buttoncontainer;
+    if (options.buttons) {
+      var buttoncontainer = Espruino.Core.HTML.domElement(
+        '<div class="guiders_buttons_container" style="padding: 10px 10px 10px 10px;bottom:10px;">');
+      winModal.querySelector(".window__viewport").append(buttoncontainer);
+
+      options.buttons.forEach(function(btn) {
+        var domBtn = Espruino.Core.HTML.domElement('<a class="guiders_button" href="#">'+btn.name+'</a>');
+        domBtn.addEventListener("click", btn.callback);
+        buttoncontainer.prepend(domBtn);
+      });
     }
 
     // Apply dimensions
     if(options.width)
-    {
-      $(".window--modal").width(options.width);
-    }
+      winModal.width(options.width);
 
     if(options.height)
-    {
-      $(".window--modal").height(options.height);
-    }
+      winModal.height(options.height);
 
-    $(".window--modal").data("api", api);
+    winModal.data_api = api;
+    api.window = winModal;
 
     return api;
   }
@@ -265,11 +306,25 @@
    *
    * options = {
    *   id    : a unique ID for this icon
-   *   icon  : the icon type to use
-   *   area  : { name : titlebar | toolbar | terminal | code,  position : left | middle | right | top | bottom }
-   *   name  : icon name - corresponds to icons.css
+   *   icon  : the icon type to use (corresponds to icons.css)
+   *   area  : {
+   *             name : titlebar | toolbar | terminal | code,
+   *             position : left | middle | right | top | bottom
+   *           }
    *   title : nice title for tooltips
    *   order : integer specifying the order. After icons have been added they'll be sorted so this is ascending
+   *   click : callback when icon clicked
+   *   more  : add down-arrow in bottom right of icon and callback when clicked
+   *   info  : info text at bottom of the button
+   *
+   * returns:
+   *
+   * {
+   *   setIcon     // update the icon
+   *   setInfo     // update the info text
+   *   remove
+   *   addMenuItem
+   * }
    */
   function addIcon(options)
   {
@@ -298,9 +353,8 @@
     if(options.cssClass)
       additionalClasses += ' '+ options.cssClass;
 
-    var container = $(selector);
-    if(container.length == 0)
-    {
+    var container = document.querySelector(selector);
+    if (!container) {
       console.warn("App.addIcon unknown area: "+ selector);
       return;
     }
@@ -312,49 +366,81 @@
     var elementClass = 'icon-'+ options.icon;
 
     // remove old icon if there was one
-    var c = container.children("."+elementClass);
-    c.remove();
+    var c = container.querySelectorAll("."+elementClass);
+    for (var i=0;i<c.length;i++) c[i].remove();
+
+    if (options.info)
+      additionalClasses += " icon--hasinfo";
 
     // add the element
-    var element = $('<a id="icon-'+ options.id +'" class="'+ elementClass +' '+ iconSize +' '+ additionalClasses +'" title="'+ options.title +'" data-icon-order="'+ order +'"></a>').appendTo(container);
+    var element = Espruino.Core.HTML.domElement('<a id="icon-'+ options.id +'" class="'+ elementClass +' '+ iconSize +' '+ additionalClasses +'" title="'+ options.title +'" data-icon-order="'+ order +'"></a>');
+    container.append(element);
+
+    var info;
+    if (options.info) {
+      info = Espruino.Core.HTML.domElement('<span class="icon__info">'+options.info+'</span>');
+      element.append(info);
+    }
+
+    if (options.more) {
+      var more = Espruino.Core.HTML.domElement('<span class="icon__more">&#9660</span>');
+      element.append(more);
+      more.addEventListener("click", function(e) {
+        e.stopPropagation();
+        options.more(e)
+      });
+    }
 
     if(options.divider)
-      element.addClass("icon--divide-"+ options.divider);
+      element.classList.add("icon--divide-"+ options.divider);
 
     if(options.click)
-      element.on("click", options.click);
+      element.addEventListener("click", options.click);
 
     if (initialised)
       sortIcons(selector);
 
     var api = {
       setIcon : function(icon) {
-        element.removeClass(elementClass);
+        element.classList.remove(elementClass);
         elementClass = 'icon-'+ icon;
-        element.addClass(elementClass);
+        element.classList.add(elementClass);
+      },
+      setInfo : function(text) {
+        if (info) info.innerHTML = text;
       },
       remove : function() {
-        element.off(); // Remove all event handlers
+        // Is there a leak if we don't remove event handlers?
         element.remove();
       },
-      addMenuItem: function(options)
-      {
-        var menuEl = element.find(".menu");
-        if(menuEl.length == 0)
-           menuEl = $('<div class="menu"></div>').appendTo(element)
+      addMenuItem: function(options) {
+        var menuEl = element.querySelector(".menu");
+        if(!menuEl) {
+          menuEl = Espruino.Core.HTML.domElement('<div class="menu"></div>');
+          element.append(menuEl);
+        }
 
         var order = 0;
         if (options.order !== undefined)
           order = options.order;
 
-        var menuItemEl = $('<a id="icon-'+ options.id +'" title="'+ options.title +'" data-icon-order="'+ order +'"><i class="icon-'+ options.icon +' sml"></i> '+ options.title +'</a>').appendTo(menuEl);
+        var menuItemHTML =
+          `<a id="menu-${options.id}" title="${options.title}" data-icon-order="${order}">`;
+        if (options.icon) menuItemHTML += `<i class="icon-${options.icon} sml"></i>`;
+        menuItemHTML += `${options.title}</a>`;
+        var menuItemEl = Espruino.Core.HTML.domElement(menuItemHTML);
+        menuEl.append(menuItemEl);
         if(options.click)
-          menuItemEl.click(function(e){
+          menuItemEl.addEventListener("click", function(e){
             e.stopPropagation();
             options.click(e);
           });
 
         sortIcons(menuEl);
+      },
+      removeMenuItem: function(id) {
+        var menuItemEl = element.querySelector("#menu-"+id);
+        if (menuItemEl) menuItemEl.remove();
       }
     };
 
@@ -365,7 +451,7 @@
       });
     }
 
-    element.data("api", api);
+    element.data_api = api;
 
     return api;
   }
@@ -402,7 +488,8 @@
 
   function findIcon(id)
   {
-    return $("#icon-"+ id).data("api");
+    var icon = document.querySelector("#icon-"+ id);
+    return icon ? icon.data_api : undefined;
   }
 
   Espruino.Core.App = {

@@ -80,9 +80,8 @@
           cm.setCursor(c);
         }
       }
-      // write the modified code into local storage
-      if ((typeof chrome!="undefined") && chrome.storage && chrome.storage.local)
-        chrome.storage.local.set({"CODE_JS": cm.getValue()});
+      // Send an event for code changed
+      Espruino.callProcessor("jsCodeChanged", { code : cm.getValue() } );
     });
     // Handle hovering
     CodeMirror.on(codeMirror.getWrapperElement(), "mouseover", function(e) {
@@ -111,6 +110,13 @@
 
   function getCode() {
     var code = codeMirror.getValue();
+    // replace the Non-breaking space character with space. This seems to be an odd Android thing
+    code = code.replace(/\xA0/g," ");
+    return code;
+  }
+
+  function getSelectedCode() {
+    var code = codeMirror.getSelection();
     // replace the Non-breaking space character with space. This seems to be an odd Android thing
     code = code.replace(/\xA0/g," ");
     return code;
@@ -191,6 +197,7 @@
   Espruino.Core.EditorJavaScript = {
     init : init,
     getCode : getCode,
+    getSelectedCode : getSelectedCode, // get the currently highlighted bit of code
     setCode : setCode,
     madeVisible : madeVisible,
     getCodeMirror : function () { return codeMirror; }

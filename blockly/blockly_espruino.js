@@ -28,6 +28,8 @@ window.onload = function() {
     blocklyInitialBlocks = document.getElementById('blocklyInitial'); // default
   else
     blocklyInitialBlocks = document.getElementById('blocklyInitial_smartibot'); // smartibot
+
+
   // Remove any stuff we don't want from the toolbox based on the quert string for this page...
   var toolbox = document.getElementById('toolbox');
   for (var i=0;i<toolbox.children.length;i++) {
@@ -52,6 +54,24 @@ window.onload = function() {
   Blockly.inject(document.body,{
     toolbox: toolbox,
     media: 'media/',
+  });
+
+  if (window.localStorage) {
+    var savedBlocks = window.localStorage.getItem("BLOCKLY");
+    if (savedBlocks) {
+      blocklyInitialBlocks = Blockly.Xml.textToDom(savedBlocks);
+    }
+  }
+
+  // Store current blockly state
+  Blockly.mainWorkspace.addChangeListener(function() {
+    var xml = Blockly.Xml.workspaceToDom( Blockly.mainWorkspace );
+    if (window.localStorage) {
+      var txt = "";
+      if (xml.children.length)
+      txt = Blockly.Xml.domToText(xml)
+      window.localStorage.setItem("BLOCKLY", txt);
+    }
   });
 
   // Notify parent - see /js/core/editorBlockly.js
@@ -80,7 +100,7 @@ Blockly.setVisible = function(info) {
   if (blocklyVisible) return;
   blocklyVisible = true;
   // Set up initial code
-  Blockly.Xml.domToWorkspace(Blockly.mainWorkspace, blocklyInitialBlocks);
+  Blockly.Xml.domToWorkspace(blocklyInitialBlocks, Blockly.mainWorkspace);
 };
 
 // When we have JSON from the board, use it to
